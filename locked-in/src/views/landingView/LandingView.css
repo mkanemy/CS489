@@ -1,0 +1,8 @@
+.LandingView {
+    width: 85%;
+    margin: 0 auto;
+    height: 80vh;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
