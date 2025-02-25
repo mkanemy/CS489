@@ -9,8 +9,8 @@ function SignInCard() {
     return (
         <Card variant="outlined" sx={{ maxWidth: 450, backgroundColor: '#555', color: 'white', padding: '2rem', borderRadius: '8px', boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)" }}>
             <Stack sx={{ flexDirection: "column", gap: 2 }}>
-                <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
-                    Enter Vault
+                <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)', fontWeight: 500 }}>
+                    Unlock Vault
                 </Typography>
                 <Typography sx={{ fontWeight: 'medium', marginBottom: '5px' }}>
                     Use your google account to securely log in and enter your vault!
