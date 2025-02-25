@@ -6,3 +6,9 @@
     justify-content: space-around;
     align-items: center;
 }
+
+.LandingViewWrapper {
+    background-color: rgb(75, 75, 75);
+    width: 100vw;
+    height: 100vh;
+}

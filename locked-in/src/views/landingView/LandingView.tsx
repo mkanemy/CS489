@@ -5,11 +5,13 @@ import './LandingView.css'
 
 function LandingView() {
     return (
-        <Stack className="LandingView" sx={{ flexDirection: 'row', alignSelf: 'center' }}>
-            <CssBaseline enableColorScheme />
-            <LandingInfo />
-            <SignInCard />
-        </Stack>
+        <div className="LandingViewWrapper">
+            <Stack className="LandingView" sx={{ flexDirection: 'row', alignSelf: 'center' }}>
+                <CssBaseline enableColorScheme />
+                <LandingInfo />
+                <SignInCard />
+            </Stack>
+        </div>
     )
 }
 
