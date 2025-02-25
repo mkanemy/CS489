@@ -1,6 +1,7 @@
 .FilterOptions {
     margin-top: 1rem;
-    width: 90%;
+    width: 100%;
+    margin-left: 5em;
     align-items: left;
     gap: 35px;
 }
