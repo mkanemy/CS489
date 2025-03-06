@@ -12,8 +12,6 @@ function UploadElement({setData, userKey}: {setData: (value: VaultElementInterfa
     const [uploadType, setUploadType] = useState("Text");
     const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
     const [identifierName, setIdentifierName] = useState("");
-    // TODO - store this hashed!
-    const [secret, setSecret] = useState("");
 
     const secretRef = useRef<HTMLInputElement | null>(null);
     const fileRef = useRef<HTMLInputElement | null>(null);
@@ -101,13 +99,6 @@ function UploadElement({setData, userKey}: {setData: (value: VaultElementInterfa
                         color="primary" 
                         sx={{ borderRadius: "8px", textTransform: "none", padding: "8px 25px", marginTop: '20px' }}
                         type="submit"
-                        // onClick={(e) => {
-                        //     // TODO - need to update backend here!!!
-                        //     console.log(expiryDate.toString() + " " + secret + " " + identifierName);
-                        //     console.log("UPDATING");
-                            // setData([...VaultData, { id: 10, name: identifierName, type: ElementType.String, secret: secret }]);
-                            // VaultData.push({ id: 10, name: identifierName, type: ElementType.String, secret: secret });
-                        // }}
                         endIcon={<FileUploadOutlinedIcon />}
                     >
                         Upload
