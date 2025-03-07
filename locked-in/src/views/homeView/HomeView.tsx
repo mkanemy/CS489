@@ -6,11 +6,17 @@ import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlin
 import UploadElement from '../../components/uploadElement/UploadElement';
 import { useEffect, useState } from 'react';
 import { VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
+import UserKeyPopup from '../../components/userKeyPopup/UserKeyPopup';
 
 function HomeView() {
     const [searchText, setSearchText] = useState("");
     const [filterType, setFilterType] = useState("All");
+    const [userKey, setUserKey] = useState("");
     const [data, setData] = useState<VaultElementInterface[]>(VaultData);
+
+    useEffect(() => {
+        console.log(userKey);
+    })
     
     return (
         <Stack className="HomeView" sx={{ flexDirection: 'column', alignSelf: 'center' }}>
@@ -27,13 +33,14 @@ function HomeView() {
                     Settings
                 </Button>
             </Stack>
+            {/* <UserKeyPopup setUserKey={setUserKey}/> */}
             <Divider sx={{margin: '20px 20px 0px 20px', borderColor: 'lightgray'}}/>
             <FilterOptions onSearchChange={setSearchText} onFilterChange={setFilterType}></FilterOptions>
             <Divider sx={{margin: '20px', borderColor: 'lightgray'}}/>
             <Stack className="HomeTitle-Body" sx={{ flexDirection: 'row', width: '100vw' }}>
-                <VaultList searchText={searchText} filterType={filterType} data={data}></VaultList>
+                <VaultList userKey={userKey} searchText={searchText} filterType={filterType} data={data}></VaultList>
                 {/* TODO - remove the callback here cuz we will get from backend */}
-                <UploadElement setData={setData}></UploadElement>
+                <UploadElement userKey={userKey} setData={setData}></UploadElement>
             </Stack>
         </Stack>
     )

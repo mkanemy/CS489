@@ -3,7 +3,7 @@ import './VaultList.css'
 import VaultElement from '../vaultElement/VaultElement';
 import { VaultElementInterface } from '../../interfaces/VaultElement';
 
-function VaultList({searchText, filterType, data}: {searchText: string, filterType: string, data: VaultElementInterface[]}) {
+function VaultList({searchText, filterType, data, userKey}: {searchText: string, filterType: string, data: VaultElementInterface[], userKey: string}) {
     
     console.log(data);
 
@@ -13,7 +13,7 @@ function VaultList({searchText, filterType, data}: {searchText: string, filterTy
                 (
                     (searchText === '' || element.name.toLocaleLowerCase().startsWith(searchText.toLocaleLowerCase())) && 
                     (filterType === 'All' || filterType === element.type)
-                ) && (<VaultElement index={index} element={element}></VaultElement>)))}
+                ) && (<VaultElement index={index} element={element} userKey={userKey}></VaultElement>)))}
         </Stack>
     )
 }
