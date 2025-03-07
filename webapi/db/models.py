@@ -1,3 +1,4 @@
+from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from typing import Optional
@@ -13,17 +14,17 @@ class SecretType(str, Enum):
 class SecretMetadataBase(SQLModel):
     name: str = Field(unique=True)
     type: SecretType = Field(index=True)
+    expires_at: Optional[datetime] = field(default=None)
 
 
 class SecretMetadata(SecretMetadataBase, table=True):
     id: Optional[int] = Field(index=True, primary_key=True, default=None)
-    owner_id: int = Field(index=True, foreign_key="user.id")
+    owner_email: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.now)
-
 
 class SecretMetadataPublic(SecretMetadataBase):
     id: int
-    owner_id: int
+    created_at: datetime
 
 
 class SecretString(SQLModel, table=True):

@@ -1,19 +1,55 @@
-from fastapi import APIRouter, Request
+import os
+import uuid
+from datetime import datetime, timedelta
 
-from webapi.auth import oauth
+from authlib.integrations.base_client import OAuthError
+from fastapi import APIRouter, Request, HTTPException
+from google.auth.transport import requests
+from starlette.responses import RedirectResponse, HTMLResponse
+
+from webapi.auth.jwt import create_access_token
+from webapi.main import oauth
 
 router = APIRouter()
 
 
-@router.get('/login')
+@router.get("/login")
 async def login(request: Request):
-    redirect_uri = request.url_for('auth')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    request.session.clear()
+    frontend_url = os.getenv("FRONTEND_URL")
+    redirect_url = os.getenv("REDIRECT_URL")
+    request.session["login_redirect"] = frontend_url
+
+    return await oauth.google.authorize_redirect(request, redirect_url, prompt="consent")
 
 
-@router.get('/auth')
+@router.route("/auth")
 async def auth(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    user = token['userinfo']
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Google authentication failed.")
 
-    return user
+    user = token.get("userinfo")
+    expires_in = token.get("expires_in")
+    iss = user.get("iss")
+    user_email = user.get("email")
+
+    if iss not in ["https://accounts.google.com", "accounts.google.com"] or user_email is None:
+        raise HTTPException(status_code=401, detail="Google authentication failed.")
+
+    # Create JWT token
+    access_token_expires = timedelta(seconds=expires_in)
+    access_token = create_access_token(data={"email": user_email}, expires_delta=access_token_expires)
+
+    redirect_url = request.session.pop("login_redirect", "")
+    response = RedirectResponse(redirect_url)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        #secure=True,  # Ensure you're using HTTPS
+        samesite="strict",  # Set the SameSite attribute to None
+    )
+
+    return response
