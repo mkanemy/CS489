@@ -33,7 +33,7 @@ function HomeView() {
                     Settings
                 </Button>
             </Stack>
-            <UserKeyPopup setUserKey={setUserKey}/>
+            {/* <UserKeyPopup setUserKey={setUserKey}/> */}
             <Divider sx={{margin: '20px 20px 0px 20px', borderColor: 'lightgray'}}/>
             <FilterOptions onSearchChange={setSearchText} onFilterChange={setFilterType}></FilterOptions>
             <Divider sx={{margin: '20px', borderColor: 'lightgray'}}/>
