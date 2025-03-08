@@ -1,17 +1,23 @@
 ## Setup
+
 To set up the Web API, firstly execute
+
 ```shell
 python -m venv .venv
 ```
+
 to create a new virtual environment.
 
 Then, execute
+
 ```shell
 pip install -r requirements.txt
 ```
+
 to install all dependencies.
 
 Then, create a `.env` configuration file, with
+
 ```
 GOOGLE_CLIENT_ID=<client id from google>
 GOOGLE_CLIENT_SECRET=<client secret from google>
@@ -22,6 +28,7 @@ FRONTEND_URL=<url to the frontend's /home page>
 ```
 
 Finally, run
+
 ```shell
 fastapi dev main.py 
 ```

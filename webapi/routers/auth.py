@@ -1,11 +1,8 @@
 import os
-import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from authlib.integrations.base_client import OAuthError
 from fastapi import APIRouter, Request, HTTPException
-from google.auth.transport import requests
-from starlette.responses import RedirectResponse, HTMLResponse
+from starlette.responses import RedirectResponse
 
 from webapi.auth.jwt import create_access_token
 from webapi.main import oauth
@@ -48,7 +45,7 @@ async def auth(request: Request):
         key="access_token",
         value=access_token,
         httponly=True,
-        #secure=True,  # Ensure you're using HTTPS
+        # secure=True,  # Ensure you're using HTTPS
         samesite="strict",  # Set the SameSite attribute to None
     )
 

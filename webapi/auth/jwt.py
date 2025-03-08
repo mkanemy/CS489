@@ -1,3 +1,4 @@
+import os
 import traceback
 from datetime import datetime, timedelta
 
@@ -8,7 +9,9 @@ from jwt import ExpiredSignatureError
 from sqlalchemy.sql.annotation import Annotated
 from starlette import status
 
-from webapi.main import JWT_SECRET_KEY, ALGORITHM
+# JWT Configurations
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ALGORITHM = "HS256"
 
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):

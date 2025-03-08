@@ -22,6 +22,7 @@ class SecretMetadata(SecretMetadataBase, table=True):
     owner_email: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.now)
 
+
 class SecretMetadataPublic(SecretMetadataBase):
     id: int
     created_at: datetime

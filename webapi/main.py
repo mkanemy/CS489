@@ -1,4 +1,3 @@
-import json
 import os
 
 from authlib.integrations.starlette_client import OAuth
@@ -12,7 +11,7 @@ from .routers import vault, auth
 load_dotenv(override=True)
 
 # App Configuration
-app = FastAPI()
+app = FastAPI(title="LockedIn")
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("FASTAPI_SECRET_KEY"))
 
 # OAuth Setup
@@ -32,14 +31,5 @@ oauth.register(
     client_kwargs={"scope": "openid profile email"},
 )
 
-# JWT Configurations
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = "HS256"
-
-
 app.include_router(vault.router)
 app.include_router(auth.router)
-
-@app.get("/")
-def test(user: UserDep):
-    return json.dumps(user)
