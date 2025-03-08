@@ -1,12 +1,13 @@
 import pathlib
 import uuid
+from datetime import datetime
 from http import HTTPStatus
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Annotated
 
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, UploadFile, HTTPException, Query
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from webapi.auth.jwt import UserEmailDep
 from webapi.db.database import SessionDep
@@ -15,17 +16,9 @@ from webapi.storage.common import syspath
 from webapi.storage.write import write
 
 
-class UploadSecretStringRequest(BaseModel):
-    name: str
-    secret_string: bytes
-
-
-class UploadSecretFileRequest(BaseModel):
-    name: str
-
-
-class RenameSecretRequest(BaseModel):
-    name: str
+class SecretCreateUpdateModel(BaseModel):
+    name: Optional[str]
+    expires_at: Optional[datetime] = Field(gt=datetime.now(), default=None)
 
 
 router = APIRouter()
@@ -39,12 +32,12 @@ def sanity_check(secret_metadata: SecretMetadata, user_email: str):
 
 
 @router.get("/vault", tags=["vault"], response_model=List[SecretMetadataPublic])
-async def get_secret_metadata(user_email: UserEmailDep, session: SessionDep):
+async def list_secret_metadata(user_email: UserEmailDep, session: SessionDep):
     return session.get(SecretMetadata, owner_email=user_email)
 
 
 @router.get("/vault/{secret_id}", tags=["vault"])
-async def get_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
+async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, id=secret_id)
 
     sanity_check(secret_metadata, user_email)
@@ -60,37 +53,45 @@ async def get_secret(user_email: UserEmailDep, secret_id: int, session: SessionD
 
 
 @router.post("/vault/{secret_id}", tags=["vault"])
-async def post_rename_secret(user_email: UserEmailDep, secret_id: int, request: RenameSecretRequest, session: SessionDep):
+async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
+                                 update: Annotated[SecretCreateUpdateModel, Query()], session: SessionDep):
     secret_metadata = session.get(SecretMetadata, id=secret_id)
 
     sanity_check(secret_metadata, user_email)
 
-    secret_metadata.name = request.name
+    if update.expires_at:
+        secret_metadata.expires_at = update.expires_at
+    if update.name:
+        secret_metadata.name = update.name
+
     session.commit()
 
 
 @router.post("/vault/add_string", tags=["vault"])
-async def post_secret_string(user_email: UserEmailDep, request: UploadSecretStringRequest, session: SessionDep):
-    secret_metadata = SecretMetadata(name=request.name, owner_email=user_email, type=SecretType.STRING)
+async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
+                            secret_string: str, session: SessionDep):
+    secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
+                                     type=SecretType.STRING)
     session.add(secret_metadata)
 
     session.commit()
     session.refresh(secret_metadata)
 
-    secret = SecretString(secret_id=secret_metadata.id, secret_string=request.secret_string)
+    secret = SecretString(secret_id=secret_metadata.id, secret_string=secret_string)
     session.add(secret)
 
     return secret_metadata
 
 
 @router.post("/vault/add_file", tags=["vault"])
-async def post_secret_file(user_email: UserEmailDep, request: UploadSecretFileRequest, secret_file: UploadFile,
-                           session: SessionDep):
+async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
+                          secret_file: UploadFile, session: SessionDep):
     file_content: bytes = await secret_file.read()
     file_name: str = uuid.uuid4().hex
     storage_path: Path = syspath(file_name=file_name)
 
-    secret_metadata = SecretMetadata(name=request.name, owner_email=user_email, type=SecretType.FILE)
+    secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
+                                     type=SecretType.FILE)
     session.add(secret_metadata)
 
     await write(file_content, storage_path)
@@ -105,7 +106,7 @@ async def post_secret_file(user_email: UserEmailDep, request: UploadSecretFileRe
 
 
 @router.delete("/vault/{secret_id}", tags=["vault"])
-async def delete_secret_string(user_email: UserEmailDep, secret_id: int, session: SessionDep):
+async def delete_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id=secret_id)
 
     sanity_check(secret_metadata, user_email)
