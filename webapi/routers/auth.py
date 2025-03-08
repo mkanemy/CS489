@@ -5,12 +5,12 @@ from fastapi import APIRouter, Request, HTTPException
 from starlette.responses import RedirectResponse
 
 from webapi.auth.jwt import create_access_token
-from webapi.main import oauth
+from webapi.auth.oauth import oauth
 
 router = APIRouter()
 
 
-@router.get("/login")
+@router.get("/login", tags=["auth"])
 async def login(request: Request):
     request.session.clear()
     frontend_url = os.getenv("FRONTEND_URL")
@@ -20,7 +20,8 @@ async def login(request: Request):
     return await oauth.google.authorize_redirect(request, redirect_url, prompt="consent")
 
 
-@router.route("/auth")
+@router.get("/auth", tags=["auth"])
+@router.post("/auth", tags=["auth"])
 async def auth(request: Request):
     try:
         token = await oauth.google.authorize_access_token(request)

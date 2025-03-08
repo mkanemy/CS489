@@ -1,4 +1,3 @@
-from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from typing import Optional
@@ -14,7 +13,7 @@ class SecretType(str, Enum):
 class SecretMetadataBase(SQLModel):
     name: str = Field(unique=True)
     type: SecretType = Field(index=True)
-    expires_at: Optional[datetime] = field(default=None)
+    expires_at: Optional[datetime] = Field(default=None)
 
 
 class SecretMetadata(SecretMetadataBase, table=True):

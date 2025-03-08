@@ -1,12 +1,12 @@
 import os
 import traceback
 from datetime import datetime, timedelta
+from typing import Annotated
 
 from fastapi import HTTPException, Cookie
 from fastapi.params import Depends
 from jose import jwt, JWTError
 from jwt import ExpiredSignatureError
-from sqlalchemy.sql.annotation import Annotated
 from starlette import status
 
 # JWT Configurations
