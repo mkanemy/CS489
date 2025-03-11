@@ -54,11 +54,11 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
     return (
         <form onSubmit={async (e) => {
             e.preventDefault();
-            if (uploadType === "Text") {
+            if (uploadType === ElementType.Text) {
                 const encryptedValue = await encryptValue(secretRef.current ? secretRef.current.value : "");
-                setData([...VaultData, { id: 10, name: identifierName, type: ElementType.String, secret: encryptedValue }]);
-                VaultData.push({ id: 10, name: identifierName, type: ElementType.String, secret: encryptedValue });
-            } else {
+                setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue }]);
+                VaultData.push({ id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue });
+            } else if (uploadType === ElementType.File) {
                 // Process each file in the droppedFiles array
                 const encoder = new TextEncoder();
                 const keyBuffer = await window.crypto.subtle.digest("SHA-256", encoder.encode(userKey));
@@ -93,7 +93,7 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
                 );
 
                 encryptedFiles.forEach(({ fileName, encryptedData }) => {
-                    setData([...VaultData, { id: 10, name: identifierName, type: ElementType.String, secret: encryptedData }]);
+                    setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedData }]);
                     VaultData.push({ id: 10, name: identifierName, type: ElementType.File, secret: encryptedData });
                 });
 
@@ -126,7 +126,7 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
                     <TextField placeholder={uploadType == "Text" ? "Example Pwd" : "example.txt"} value={identifierName} onChange={(x) => { setIdentifierName(x.target.value ?? "") }} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
                 </Stack>
 
-                {uploadType == ElementType.String ?
+                {uploadType == ElementType.Text ?
                     <Stack>
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                             Secret to Store

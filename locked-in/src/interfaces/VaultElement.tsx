@@ -1,6 +1,6 @@
 export enum ElementType {
     File = 'File',
-    String = 'Text'
+    Text = 'Text'
 }
 
 export interface VaultElementInterface {
