@@ -28,14 +28,14 @@ class SecretMetadataPublic(SecretMetadataBase):
 
 
 class SecretString(SQLModel, table=True):
-    secret_id: int = Field(index=True, primary_key=True, foreign_key="secretMetadata.id", ondelete="CASCADE")
+    secret_id: int = Field(index=True, primary_key=True, foreign_key="secretmetadata.id", ondelete="CASCADE")
     secret_string: bytes = Field()
 
-    secret_metadata: Optional[SecretMetadata] = Relationship(back_populates="secretMetadata")
+    secret_metadata: Optional[SecretMetadata] = Relationship()
 
 
 class SecretFile(SQLModel, table=True):
-    secret_id: int = Field(index=True, primary_key=True, foreign_key="secretMetadata.id", ondelete="CASCADE")
+    secret_id: int = Field(index=True, primary_key=True, foreign_key="secretmetadata.id", ondelete="CASCADE")
     secret_file_path: str = Field()
 
-    secret_metadata: Optional[SecretMetadata] = Relationship(back_populates="secretMetadata")
+    secret_metadata: Optional[SecretMetadata] = Relationship()

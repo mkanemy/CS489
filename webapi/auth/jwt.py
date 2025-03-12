@@ -16,14 +16,14 @@ ALGORITHM = "HS256"
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
     to_encode = data.copy()
-    expire = datetime.now(datetime.UTC) + expires_delta
+    expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def get_current_user_email(token: str = Cookie(None)) -> str:
-    if not token:
+def get_current_user_email(access_token: str = Cookie(None)) -> str:
+    if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     credentials_exception = HTTPException(
@@ -32,7 +32,7 @@ def get_current_user_email(token: str = Cookie(None)) -> str:
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(access_token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
 
         user_email: str = payload.get("email")
 

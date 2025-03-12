@@ -8,6 +8,7 @@ from typing import List, Optional, Annotated
 from fastapi import APIRouter, UploadFile, HTTPException, Query, Body
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+from sqlmodel import select
 
 from webapi.auth.jwt import UserEmailDep
 from webapi.db.database import SessionDep
@@ -33,21 +34,21 @@ def sanity_check(secret_metadata: SecretMetadata, user_email: str):
 
 @router.get("/vault", tags=["vault"], response_model=List[SecretMetadataPublic])
 async def list_secret_metadata(user_email: UserEmailDep, session: SessionDep):
-    return session.get(SecretMetadata, owner_email=user_email)
+    return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email==user_email)).all()
 
 
 @router.get("/vault/{secret_id}", tags=["vault"])
 async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: SessionDep):
-    secret_metadata = session.get(SecretMetadata, id=secret_id)
+    secret_metadata = session.get(SecretMetadata, secret_id)
 
     sanity_check(secret_metadata, user_email)
 
     if secret_metadata.type == SecretType.FILE:
-        secret_file = session.get(SecretFile, secret_id=secret_id)
+        secret_file = session.get(SecretFile, secret_id)
 
         return FileResponse(secret_file.secret_file_path)
     else:
-        secret_string = session.get(SecretString, secret_id=secret_id)
+        secret_string = session.get(SecretString, secret_id)
 
         return secret_string.secret_string
 
@@ -55,7 +56,7 @@ async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: Se
 @router.post("/vault/{secret_id}", tags=["vault"])
 async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
                                  update: Annotated[SecretCreateUpdateModel, Query()], session: SessionDep):
-    secret_metadata = session.get(SecretMetadata, id=secret_id)
+    secret_metadata = session.get(SecretMetadata, secret_id)
 
     sanity_check(secret_metadata, user_email)
 
@@ -107,12 +108,12 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
 
 @router.delete("/vault/{secret_id}", tags=["vault"])
 async def delete_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
-    secret_metadata = session.get(SecretMetadata, secret_id=secret_id)
+    secret_metadata = session.get(SecretMetadata, secret_id)
 
     sanity_check(secret_metadata, user_email)
 
     if secret_metadata.type == SecretType.FILE:
-        secret_file = session.get(SecretFile, secret_id=secret_id)
+        secret_file = session.get(SecretFile, secret_id)
 
         try:
             pathlib.Path.unlink(secret_file.secret_file_path)
@@ -121,4 +122,4 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
         except OSError:
             raise HTTPException(status_code=HTTPStatus.PRECONDITION_FAILED)
 
-    session.delete(SecretMetadata, id=secret_id)
+    session.delete(SecretMetadata, secret_id)
