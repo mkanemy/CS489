@@ -25,6 +25,13 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
 
     const encryptValue = async (value: string) => {
         const encoder = new TextEncoder();
+        const valueBuffer = encoder.encode(value);
+
+        return encryptBuffer(valueBuffer)
+    };
+
+    const encryptBuffer = async (value: BufferSource) => {
+        const encoder = new TextEncoder();
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
         const keyBuffer = await window.crypto.subtle.digest("SHA-256", encoder.encode(userKey));
@@ -40,7 +47,7 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
         const encryptedBuffer = await window.crypto.subtle.encrypt(
             { name: "AES-GCM", iv: iv },
             key,
-            encoder.encode(value)
+            value
         );
 
         return btoa(
@@ -49,52 +56,39 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
                 ciphertext: Array.from(new Uint8Array(encryptedBuffer)),
             })
         );
-    };
+
+    }
 
     return (
         <form onSubmit={async (e) => {
             e.preventDefault();
             if (uploadType === ElementType.Text) {
-                const encryptedValue = await encryptValue(secretRef.current ? secretRef.current.value : "");
-                setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue }]);
-                VaultData.push({ id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue });
+                const file = secretRef.current ? secretRef.current.value : ""
+                const encryptedValue = await encryptValue(file);
+                setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" }]);
+                VaultData.push({ id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" });
             } else if (uploadType === ElementType.File) {
-                // Process each file in the droppedFiles array
-                const encoder = new TextEncoder();
-                const keyBuffer = await window.crypto.subtle.digest("SHA-256", encoder.encode(userKey));
-                const key = await window.crypto.subtle.importKey(
-                    "raw",
-                    keyBuffer,
-                    { name: "AES-GCM", length: 256 },
-                    false,
-                    ["encrypt"]
-                );
-
                 const encryptedFiles = await Promise.all(
                     droppedFiles.map(async (file) => {
+                        // Get buffer of file and file name
                         const fileBuffer = await file.arrayBuffer();
-                        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-                        const encryptedBuffer = await window.crypto.subtle.encrypt(
-                            { name: "AES-GCM", iv: iv },
-                            key,
-                            fileBuffer
-                        );
+
+                        // Encrypt file content
+                        const encryptedData = await encryptBuffer(fileBuffer)
+
+                        // Encrypt file name
+                        const encryptedName = await encryptValue(file.name)
 
                         return {
-                            fileName: file.name,
-                            encryptedData: btoa(
-                                JSON.stringify({
-                                    iv: Array.from(iv),
-                                    ciphertext: Array.from(new Uint8Array(encryptedBuffer))
-                                })
-                            )
+                            encryptedFileName: encryptedName,
+                            encryptedData: encryptedData
                         };
                     })
                 );
 
-                encryptedFiles.forEach(({ fileName, encryptedData }) => {
-                    setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedData }]);
-                    VaultData.push({ id: 10, name: identifierName, type: ElementType.File, secret: encryptedData });
+                encryptedFiles.forEach(({ encryptedFileName, encryptedData }) => {
+                    setData([...VaultData, { id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName }]);
+                    VaultData.push({ id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName });
                 });
 
             }
