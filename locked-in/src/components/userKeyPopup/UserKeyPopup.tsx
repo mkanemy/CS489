@@ -2,7 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import './UserKeyPopup.css'
 import { useState } from 'react';
 
-function UserKeyPopup({setUserKey}: {setUserKey: (input: string) => void}) {
+function UserKeyPopup({setUserKey}: Readonly<{setUserKey: (input: string) => void}>) {
     const [open, setOpen] = useState(true);
 
     const handleOpenClose = () => {

@@ -1,27 +1,21 @@
 import { Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
 import './UploadElement.css'
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ElementType, VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
 import FileDropzone from './FileDropzone';
 
-function UploadElement({ setData, userKey }: { setData: (value: VaultElementInterface[]) => void, userKey: string }) {
+function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultElementInterface[]) => void, userKey: string }>) {
     const [uploadType, setUploadType] = useState("Text");
-    const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
+    // const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
     const [identifierName, setIdentifierName] = useState("");
     const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
     const [errorMsg, setErrorMsg] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const secretRef = useRef<HTMLInputElement | null>(null);
-    const fileRef = useRef<HTMLInputElement | null>(null);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        userKey;
         setUploadType(event.target.value);
     };
 

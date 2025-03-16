@@ -1,22 +1,16 @@
-import { Box, Button, Divider, Stack, Typography } from '@mui/material'
+import { Box, Divider, Stack, Typography } from '@mui/material'
 import './HomeView.css'
 import VaultList from '../../components/vaultList/VaultList';
 import FilterOptions from '../../components/filterOptions/FilterOptions';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import UploadElement from '../../components/uploadElement/UploadElement';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
-import UserKeyPopup from '../../components/userKeyPopup/UserKeyPopup';
 
 function HomeView() {
     const [searchText, setSearchText] = useState("");
     const [filterType, setFilterType] = useState("All");
     const [userKey, setUserKey] = useState("");
     const [data, setData] = useState<VaultElementInterface[]>(VaultData);
-
-    useEffect(() => {
-        console.log(userKey);
-    })
     
     return (
         <Stack className="HomeView" sx={{ flexDirection: 'column', alignSelf: 'center' }}>

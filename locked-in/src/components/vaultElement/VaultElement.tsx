@@ -1,15 +1,14 @@
-import { Button, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { ElementType, VaultElementInterface } from '../../interfaces/VaultElement'
 import './VaultElement.css'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Download, VisibilityOutlined } from '@mui/icons-material';
 import { getMimeType } from '../../util/util';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-function VaultElement({ index, element, userKey }: { index: number, element: VaultElementInterface, userKey: string }) {
+function VaultElement({ index, element, userKey }: Readonly<{ index: number, element: VaultElementInterface, userKey: string }>) {
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
     const [copied, setCopied] = useState(false);

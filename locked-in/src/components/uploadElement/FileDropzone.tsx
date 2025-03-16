@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
-import React, { useCallback, useState } from 'react';
-import { DropzoneOptions, useDropzone } from 'react-dropzone';
+import React, { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 interface FileDropzoneProps {
   fileRef?: React.RefObject<HTMLInputElement | null>;
