@@ -7,6 +7,7 @@ import './VaultElement.css'
 import { useEffect, useState } from 'react';
 import { Download, VisibilityOutlined } from '@mui/icons-material';
 import { getMimeType } from '../../util/util';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 function VaultElement({ index, element, userKey }: { index: number, element: VaultElementInterface, userKey: string }) {
     const [showSecret, setShowSecret] = useState(false);
@@ -66,6 +67,14 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
         }
     }
 
+    const deleteText = async () => {
+        // TODO - delete text
+    }
+
+    const deleteFile = async () => {
+        // TODO - delete file
+    }
+
     const copyDecryptSecret = async () => {
         navigator.clipboard.writeText(await decryptValue(element.secret));
         setCopied(true);
@@ -101,7 +110,9 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
                     <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                         {element.name}
                     </Typography>
-                    <InfoOutlinedIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                    <ButtonBase onClick={() => { deleteFile() }}>
+                        <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                    </ButtonBase>
                 </Stack>
                 <Stack className="VaultElement-actions" sx={{ flexDirection: 'row', gap: '2rem' }}>
                     <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }}>
@@ -135,7 +146,9 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
                 <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                     {element.name}
                 </Typography>
-                <InfoOutlinedIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                <ButtonBase onClick={() => { deleteText() }}>
+                    <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                </ButtonBase>
             </Stack>
             <Stack className="VaultElement-actions" sx={{ flexDirection: 'row', gap: '2rem' }}>
                 <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }}>
