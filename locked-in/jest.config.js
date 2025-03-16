@@ -8,5 +8,5 @@ export default {
   moduleNameMapper: { "\\.(css|less)$": "<rootDir>/src/assets/__mocks__/styleMock.ts" },
   collectCoverage: true,
   coverageDirectory: "coverage",
-  coverageReporters: ["text", "html"]
+  coverageReporters: ["text", "html", "lcov"]
 };
