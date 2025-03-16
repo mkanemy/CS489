@@ -49,7 +49,7 @@ def get_current_user_email(access_token: str = Cookie(None)) -> str:
         # Handle other JWT-related errors
         traceback.print_exc()
         raise credentials_exception
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         raise HTTPException(status_code=401, detail="Not Authenticated")
 
