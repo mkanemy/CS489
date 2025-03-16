@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 interface FileDropzoneProps {

@@ -1,6 +1,5 @@
 
 import { createRoot } from 'react-dom/client'
-import './index.css'
 import LandingView from './views/landingView/LandingView'
 import HomeView from './views/homeView/HomeView'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'

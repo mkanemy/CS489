@@ -100,7 +100,6 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     };
 
 
-    console.log(element.type)
     // UI for file item
     if (element.type === ElementType.File) {
         return (

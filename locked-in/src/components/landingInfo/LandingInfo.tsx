@@ -1,20 +1,22 @@
 import { Stack, Typography } from '@mui/material'
-import './LandingInfo.css'
 import { SecurityOutlined, BuildOutlined, SpeedOutlined } from '@mui/icons-material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const infoItems = [
     {
+        key: '1',
         icon: <SecurityOutlined sx={{ color: 'white' }} />,
         title: 'Fortified Security',
         description: 'Protect your sensitive files with end-to-end encryption and multi-factor authentication.',
     }, 
     {
+        key: '2',
         icon: <SpeedOutlined sx={{ color: 'white' }} />,
         title: 'Instant & Seamless Access',
         description: 'Retrieve your stored text and files from any device, anytime.',
     }, 
     {
+        key: '3',
         icon: <BuildOutlined sx={{ color: 'white' }} />,
         title: 'Built for Flexibility',
         description: 'Store anything—notes, passwords, documents—securely and effortlessly.',
@@ -32,7 +34,7 @@ function LandingInfo() {
             </Stack>
 
             {infoItems.map((item) => (
-                <Stack direction="row" sx={{ gap: 2 }}>
+                <Stack direction="row" sx={{ gap: 2 }} key={item.key} >
                     {item.icon}
                     <div>
                         <Typography sx={{ fontWeight: 600, marginBottom: '5px', color: 'white' }}>

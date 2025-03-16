@@ -1,5 +1,4 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
-import './UserKeyPopup.css'
 import { useState } from 'react';
 
 function UserKeyPopup({setUserKey}: Readonly<{setUserKey: (input: string) => void}>) {

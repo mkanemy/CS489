@@ -1,7 +1,7 @@
 import { Box, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
 import './FilterOptions.css'
 
-function FilterOptions({onSearchChange, onFilterChange}: Readonly<{onSearchChange: (value: string) => void, onFilterChange: (value: string) => void}>) {
+function FilterOptions({onSearchChange, onFilterChange}: {onSearchChange: (value: string) => void, onFilterChange: (value: string) => void}) {
     return (
         <Stack className="FilterOptions" sx={{ 
                 flexDirection: { xs: 'column', md: 'row' },

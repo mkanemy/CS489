@@ -4,8 +4,6 @@ import VaultElement from '../vaultElement/VaultElement';
 import { VaultElementInterface } from '../../interfaces/VaultElement';
 
 function VaultList({searchText, filterType, data, userKey}: Readonly<{searchText: string, filterType: string, data: VaultElementInterface[], userKey: string}>) {
-    
-    console.log(data);
 
     return (
         <Stack className="VaultList" sx={{ flexDirection: 'column', alignSelf: 'center', marginTop: '5%' }}>

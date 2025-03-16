@@ -1,11 +1,7 @@
 import { Card, Divider, Stack, Typography } from '@mui/material'
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import  { useNavigate } from 'react-router-dom'
-import './SignInCard.css'
 
 function SignInCard() {
-    let navigate = useNavigate();
-    
     return (
         <Card variant="outlined" sx={{ maxWidth: 450, backgroundColor: '#555', color: 'white', padding: '2rem', borderRadius: '8px', boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)" }}>
             <Stack sx={{ flexDirection: "column", gap: 2 }}>
