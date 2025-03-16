@@ -15,6 +15,7 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
     const [identifierName, setIdentifierName] = useState("");
     const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
     const [errorMsg, setErrorMsg] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const secretRef = useRef<HTMLInputElement | null>(null);
     const fileRef = useRef<HTMLInputElement | null>(null);
@@ -63,6 +64,12 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
     return (
         <form onSubmit={async (e) => {
             e.preventDefault();
+
+            if (isSubmitting) {
+                return;
+            }
+            setIsSubmitting(true);
+
             if (uploadType === ElementType.Text) {
                 const value = secretRef.current ? secretRef.current.value : ""
                 const encryptedValue = await encryptValue(value);
@@ -104,6 +111,9 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
 
             setIdentifierName("");
 
+            setTimeout(() => {
+                setIsSubmitting(false);
+            }, 1500);
         }}>
             <Stack className="UploadElement" sx={{ flexDirection: 'column', gap: '10px', marginTop: { xs: 0, md: '5vh' }, boxShadow: '0px 4px 20px rgba(0,0,0,0.3)' }}>
                 <Typography sx={{ fontSize: '1.3rem', fontWeight: 600 }}>
