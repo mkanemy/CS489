@@ -23,7 +23,7 @@ jobs:
         run: cd locked-in && npm ci
 
       - name: Run tests with coverage
-        run: npm run test --coverage && cd ../
+        run: cd locked-in && npm run test --coverage
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
