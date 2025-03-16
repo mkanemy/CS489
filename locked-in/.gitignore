@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Jest coverage reports
-coverage/
+coverage
