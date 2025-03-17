@@ -1,6 +1,6 @@
 import os
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from fastapi import HTTPException, Cookie
@@ -16,7 +16,7 @@ ALGORITHM = "HS256"
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
     to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
+    expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -49,7 +49,7 @@ def get_current_user_email(access_token: str = Cookie(None)) -> str:
         # Handle other JWT-related errors
         traceback.print_exc()
         raise credentials_exception
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         raise HTTPException(status_code=401, detail="Not Authenticated")
 
