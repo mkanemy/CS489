@@ -14,6 +14,7 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
+      # FRONTEND
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -39,3 +40,20 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx
             -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+      # BACKEND
+      # - name: Install dependencies
+      #   run: cd locked-in && npm ci
+
+      # - name: Run tests with coverage
+      #   run: cd locked-in && npm run test --coverage
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: webapi
+          args: >
+            -Dsonar.projectKey=mkanemy_CS489
+            -Dsonar.organization=mkanemy
