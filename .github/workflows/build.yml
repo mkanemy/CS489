@@ -26,7 +26,7 @@ jobs:
       - name: Run tests with coverage
         run: cd locked-in && npm run test --coverage
 
-      - name: SonarQube Scan
+      - name: SonarQube Scan - FRONTEND
         uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -42,18 +42,12 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
       # BACKEND
-      # - name: Install dependencies
-      #   run: cd locked-in && npm ci
-
-      # - name: Run tests with coverage
-      #   run: cd locked-in && npm run test --coverage
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: webapi
-          args: >
-            -Dsonar.projectKey=mkanemy_CS489
-            -Dsonar.organization=mkanemy
+      # - name: SonarQube Scan - BACKEND
+      #   uses: SonarSource/sonarqube-scan-action@v4
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     projectBaseDir: webapi
+      #     args: >
+      #       -Dsonar.projectKey=mkanemy_CS489
+      #       -Dsonar.organization=mkanemy
