@@ -37,7 +37,7 @@ async def list_secret_metadata(user_email: UserEmailDep, session: SessionDep):
     return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email==user_email)).all()
 
 
-@router.get("/vault/{secret_id}", tags=["vault"])
+@router.get("/vault/secret/{secret_id}", tags=["vault"])
 async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
 
@@ -53,7 +53,7 @@ async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: Se
         return secret_string.secret_string
 
 
-@router.post("/vault/{secret_id}", tags=["vault"])
+@router.post("/vault/secret/{secret_id}", tags=["vault"])
 async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
                                  update: Annotated[SecretCreateUpdateModel, Query()], session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
@@ -68,7 +68,7 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
     session.commit()
 
 
-@router.post("/vault/add_string", tags=["vault"])
+@router.post("/vault/add/string", tags=["vault"])
 async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
                             secret_string: Annotated[str, Body()], session: SessionDep):
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
@@ -84,7 +84,7 @@ async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreat
     return secret_metadata
 
 
-@router.post("/vault/add_file", tags=["vault"])
+@router.post("/vault/add/file", tags=["vault"])
 async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
                           secret_file: UploadFile, session: SessionDep):
     file_content: bytes = await secret_file.read()
@@ -106,7 +106,7 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
     return secret_metadata
 
 
-@router.delete("/vault/{secret_id}", tags=["vault"])
+@router.delete("/vault/secret/{secret_id}", tags=["vault"])
 async def delete_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
 
