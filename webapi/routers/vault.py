@@ -80,6 +80,7 @@ async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreat
 
     secret = SecretString(secret_id=secret_metadata.id, secret_string=secret_string)
     session.add(secret)
+    session.commit()
 
     return secret_metadata
 
@@ -102,6 +103,7 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
 
     secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
     session.add(secret)
+    session.commit()
 
     return secret_metadata
 
