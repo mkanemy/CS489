@@ -70,7 +70,7 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
 
 @router.post("/vault/add/string", tags=["vault"])
 async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
-                            secret_string: Annotated[str, Body()], session: SessionDep):
+                            secret_string: Annotated[bytes, Body()], session: SessionDep):
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
                                      type=SecretType.STRING)
     session.add(secret_metadata)
