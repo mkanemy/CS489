@@ -50,7 +50,7 @@ async def auth(request: Request):
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=IS_SECURE_COOKIES,  # Ensure you're using HTTPS
+        # secure=IS_SECURE_COOKIES,  # Ensure you're using HTTPS
         samesite="strict",  # Set the SameSite attribute to None
     )
 
