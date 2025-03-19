@@ -7,7 +7,7 @@ from starlette.responses import RedirectResponse
 from webapi.auth.jwt import create_access_token
 from webapi.auth.oauth import oauth
 
-IS_SECURE_COOKIES: bool = os.getenv("DEPLOYMENT").capitalize() == "PRODUCTION"
+IS_SECURE_COOKIES: bool = (os.getenv("DEPLOYMENT") or "").capitalize() == "PRODUCTION"
 
 router = APIRouter()
 
@@ -41,6 +41,8 @@ async def auth(request: Request):
     # Create JWT token
     access_token_expires = timedelta(seconds=expires_in)
     access_token = create_access_token(data={"email": user_email}, expires_delta=access_token_expires)
+
+    print(access_token)
 
     redirect_url = request.session.pop("login_redirect", "")
     response = RedirectResponse(redirect_url)
