@@ -19,7 +19,7 @@ async def login(request: Request):
     redirect_url = os.getenv("REDIRECT_URL")
     request.session["login_redirect"] = frontend_url
 
-    return await oauth.google.authorize_redirect(request, redirect_url, prompt="consent")
+    return await oauth.google.authorize_redirect(request, redirect_url, prompt="select_account")
 
 
 @router.get("/auth", tags=["auth"])
@@ -50,8 +50,8 @@ async def auth(request: Request):
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=IS_SECURE_COOKIES,  # Ensure you're using HTTPS
-        samesite="strict",  # Set the SameSite attribute to None
+        secure=IS_SECURE_COOKIES,
+        samesite="strict",
     )
 
     return response

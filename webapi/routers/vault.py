@@ -34,12 +34,15 @@ def sanity_check(secret_metadata: SecretMetadata, user_email: str):
 
 @router.get("/vault", tags=["vault"], response_model=List[SecretMetadataPublic])
 async def list_secret_metadata(user_email: UserEmailDep, session: SessionDep):
-    return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email==user_email)).all()
+    return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email == user_email)).all()
 
 
 @router.get("/vault/secret/{secret_id}", tags=["vault"])
 async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
+
+    if not secret_metadata:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     sanity_check(secret_metadata, user_email)
 
@@ -58,6 +61,9 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
                                  update: Annotated[SecretCreateUpdateModel, Query()], session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
 
+    if not secret_metadata:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+
     sanity_check(secret_metadata, user_email)
 
     if update.expires_at:
@@ -66,6 +72,9 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
         secret_metadata.name = update.name
 
     session.commit()
+    session.refresh(secret_metadata)
+
+    return secret_metadata
 
 
 @router.post("/vault/add/string", tags=["vault"])
@@ -80,7 +89,9 @@ async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreat
 
     secret = SecretString(secret_id=secret_metadata.id, secret_string=secret_string)
     session.add(secret)
+
     session.commit()
+    session.refresh(secret_metadata)
 
     return secret_metadata
 
@@ -103,7 +114,9 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
 
     secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
     session.add(secret)
+
     session.commit()
+    session.refresh(secret_metadata)
 
     return secret_metadata
 
@@ -111,6 +124,9 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
 @router.delete("/vault/secret/{secret_id}", tags=["vault"])
 async def delete_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
+
+    if not secret_metadata:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     sanity_check(secret_metadata, user_email)
 
@@ -125,3 +141,4 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
             raise HTTPException(status_code=HTTPStatus.PRECONDITION_FAILED)
 
     session.delete(SecretMetadata, secret_id)
+    session.commit()

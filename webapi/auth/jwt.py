@@ -3,11 +3,10 @@ import traceback
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import HTTPException, Cookie
+from fastapi import HTTPException, Cookie, status
 from fastapi.params import Depends
 from jose import jwt, JWTError
 from jwt import ExpiredSignatureError
-from starlette import status
 
 # JWT Configurations
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -24,13 +23,16 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
 
 def get_current_user_email(access_token: str = Cookie(None)) -> str:
     if not access_token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
 
     credentials_exception = HTTPException(
-        status_code=401,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(access_token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
 
@@ -44,14 +46,20 @@ def get_current_user_email(access_token: str = Cookie(None)) -> str:
     except ExpiredSignatureError:
         # Specifically handle expired tokens
         traceback.print_exc()
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired. Please login again.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session expired. Please login again."
+        )
     except JWTError:
         # Handle other JWT-related errors
         traceback.print_exc()
         raise credentials_exception
     except Exception:
         traceback.print_exc()
-        raise HTTPException(status_code=401, detail="Not Authenticated")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not Authenticated"
+        )
 
 
 UserEmailDep = Annotated[str, Depends(get_current_user_email)]
