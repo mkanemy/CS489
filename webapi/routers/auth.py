@@ -7,6 +7,8 @@ from starlette.responses import RedirectResponse
 from webapi.auth.jwt import create_access_token
 from webapi.auth.oauth import oauth
 
+IS_SECURE_COOKIES: bool = (os.getenv("DEPLOYMENT") or "").capitalize() == "PRODUCTION"
+
 router = APIRouter()
 
 
@@ -17,7 +19,7 @@ async def login(request: Request):
     redirect_url = os.getenv("REDIRECT_URL")
     request.session["login_redirect"] = frontend_url
 
-    return await oauth.google.authorize_redirect(request, redirect_url, prompt="consent")
+    return await oauth.google.authorize_redirect(request, redirect_url, prompt="select_account")
 
 
 @router.get("/auth", tags=["auth"])
@@ -40,14 +42,16 @@ async def auth(request: Request):
     access_token_expires = timedelta(seconds=expires_in)
     access_token = create_access_token(data={"email": user_email}, expires_delta=access_token_expires)
 
+    print(access_token)
+
     redirect_url = request.session.pop("login_redirect", "")
     response = RedirectResponse(redirect_url)
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        # secure=True,  # Ensure you're using HTTPS
-        samesite="strict",  # Set the SameSite attribute to None
+        secure=IS_SECURE_COOKIES,
+        samesite="strict",
     )
 
     return response

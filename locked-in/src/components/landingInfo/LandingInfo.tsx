@@ -19,7 +19,7 @@ const infoItems = [
         key: '3',
         icon: <BuildOutlined sx={{ color: 'white' }} />,
         title: 'Built for Flexibility',
-        description: 'Store anything—notes, passwords, documents—securely and effortlessly.',
+        description: 'Store anything — notes, passwords, documents — securely and effortlessly.',
     }, 
 ]
 
