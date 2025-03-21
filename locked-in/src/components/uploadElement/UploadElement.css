@@ -3,9 +3,8 @@
     padding: 20px;
     border-radius: 8px;
     width: 100%;
-    max-width: 400px;
+    max-width: 60%;
     margin: 0 auto;
     height: fit-content;
-    margin-top: 5vh;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }

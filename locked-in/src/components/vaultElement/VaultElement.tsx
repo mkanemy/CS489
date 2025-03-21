@@ -1,16 +1,17 @@
-import { Button, ButtonBase, Stack, Typography } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { ElementType, VaultElementInterface } from '../../interfaces/VaultElement'
 import './VaultElement.css'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Download, VisibilityOutlined } from '@mui/icons-material';
 import { getMimeType } from '../../util/util';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-function VaultElement({ index, element, userKey }: { index: number, element: VaultElementInterface, userKey: string }) {
+function VaultElement({ index, element, userKey }: Readonly<{ index: number, element: VaultElementInterface, userKey: string }>) {
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
+    const [copied, setCopied] = useState(false);
 
     const [showFileName, setShowFileName] = useState(false);
     const [fileName, setFileName] = useState("");
@@ -46,13 +47,41 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
     }
 
     const showDecryptSecret = async () => {
-        setDecryptedValue(await decryptValue(element.secret));
-        setShowSecret(!showSecret);
+        if (showSecret) {
+            setDecryptedValue("****************");
+            setShowSecret(!showSecret);
+        } else {
+            setDecryptedValue(await decryptValue(element.secret));
+            setShowSecret(!showSecret);
+        }
     }
 
     const showDecryptFileName = async () => {
-        setShowFileName(!showFileName);
-        setFileName(await decryptValue(element.fileName));
+        if (showFileName) {
+            setFileName("****************");
+            setShowFileName(!showFileName);
+        } else {
+            setShowFileName(!showFileName);
+            setFileName(await decryptValue(element.fileName));
+        }
+    }
+
+    const deleteText = async () => {
+        // TODO - delete text
+    }
+
+    const deleteFile = async () => {
+        // TODO - delete file
+    }
+
+    const copyDecryptSecret = async () => {
+        navigator.clipboard.writeText(await decryptValue(element.secret));
+        setCopied(true);
+
+        setTimeout(() => {
+            setCopied(false);
+        }, 1500);
+
     }
 
     const downloadFile = async () => {
@@ -71,7 +100,6 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
     };
 
 
-    console.log(element.type)
     // UI for file item
     if (element.type === ElementType.File) {
         return (
@@ -80,7 +108,9 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
                     <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                         {element.name}
                     </Typography>
-                    <InfoOutlinedIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                    <ButtonBase onClick={() => { deleteFile() }}>
+                        <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                    </ButtonBase>
                 </Stack>
                 <Stack className="VaultElement-actions" sx={{ flexDirection: 'row', gap: '2rem' }}>
                     <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }}>
@@ -89,6 +119,9 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
                     <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
                         <ButtonBase onClick={() => { showDecryptFileName() }}>
                             {showFileName ? <VisibilityOutlined /> : <VisibilityOffOutlinedIcon />}
+                            <Typography sx={{ fontSize: '1rem', fontWeight: 400 }}>
+                                Show
+                            </Typography>
                         </ButtonBase>
                     </Stack>
                     <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
@@ -111,7 +144,9 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
                 <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                     {element.name}
                 </Typography>
-                <InfoOutlinedIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                <ButtonBase onClick={() => { deleteText() }}>
+                    <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                </ButtonBase>
             </Stack>
             <Stack className="VaultElement-actions" sx={{ flexDirection: 'row', gap: '2rem' }}>
                 <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }}>
@@ -125,12 +160,16 @@ function VaultElement({ index, element, userKey }: { index: number, element: Vau
                         </Typography>
                     </ButtonBase>
                 </Stack>
-                <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
-                    <ContentCopyIcon />
-                    <Typography sx={{ fontSize: '1rem', fontWeight: 400 }}>
-                        Copy
-                    </Typography>
-                </Stack>
+                    <Tooltip title={copied ? "Copied!" : ""} arrow>
+                        <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
+                            <ButtonBase onClick={() => { copyDecryptSecret() }}>
+                                <ContentCopyIcon />
+                                <Typography sx={{ fontSize: '1rem', fontWeight: 400 }}>
+                                    Copy
+                                </Typography>
+                            </ButtonBase>
+                        </Stack>
+                    </Tooltip>
             </Stack>
         </Stack>
     )

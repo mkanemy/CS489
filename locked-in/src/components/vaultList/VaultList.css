@@ -1,4 +1,6 @@
 .VaultList {
     margin: 2em;
     margin-top: 0;
+    min-width: 55%;
+    text-align: center;
 }

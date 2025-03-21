@@ -1,21 +1,19 @@
-import React, { useCallback, useState } from 'react';
-import { DropzoneOptions, useDropzone } from 'react-dropzone';
+import { Typography } from '@mui/material';
+import { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 interface FileDropzoneProps {
   fileRef?: React.RefObject<HTMLInputElement | null>;
-  onFilesDrop?: (files: File[]) => void;
+  setDroppedFiles: (files: File[]) => void;
+  droppedFiles: File[];
+  setErrorMsg: (val: string) => void;
 }
 
-const FileDropzone: React.FC<FileDropzoneProps> = ({ fileRef, onFilesDrop }) => {
-  const [files, setFiles] = useState<File[]>([]);
-
+const FileDropzone: React.FC<FileDropzoneProps> = ({ fileRef, setDroppedFiles, droppedFiles, setErrorMsg }) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles(acceptedFiles); // keep local state (if needed)
-    if (onFilesDrop) {
-      onFilesDrop(acceptedFiles); // send files to parent
-    }
-    console.log(acceptedFiles);
-  }, [onFilesDrop]);
+    setErrorMsg('');
+    setDroppedFiles(acceptedFiles);
+  }, [setDroppedFiles]);
   
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -37,47 +35,57 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({ fileRef, onFilesDrop }) => 
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: 'auto' }}>
+    <div style={{ maxWidth: '100%' }}>
       <div
         {...getRootProps()}
         style={{
           border: '2px dashed #888',
-          padding: '20px',
+          padding: '20px 0 20px 0',
           textAlign: 'center',
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         <input ref={fileRef} {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} />
         {isDragActive ? (
-          <p>Drop the files here ...</p>
+          <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
+            Drop here...
+          </Typography>
         ) : (
-          <p>Drag 'n' drop some files here, or click to select files</p>
+          <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
+            Drag files here, or click to select files
+          </Typography>
         )}
       </div>
-      <div style={{ marginTop: '20px' }}>
-        <h3>Dropped Files</h3>
-        <ul>
-          {files.map((file, index) => (
-            <li key={index}>
-              <button
-                type="button"
-                onClick={() => handleDownload(file)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'blue',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  padding: 0,
-                  fontSize: 'inherit'
-                }}
-              >
-                {file.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {(droppedFiles.length != 0) &&
+        <div style={{ marginTop: '5px' }}>
+          <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
+            Dropped Files:
+          </Typography>
+          <ul style={{margin: 0, paddingLeft: '20px'}}>
+            {droppedFiles.map((file, index) => (
+              <li key={index}>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(file)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontSize: 'inherit'
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
+                    {file.name.length <= 40 ? file.name : file.name.slice(0, 37) + '...'}
+                  </Typography>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      }
     </div>
   );
 };
