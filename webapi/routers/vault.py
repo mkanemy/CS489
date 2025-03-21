@@ -5,7 +5,7 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import List, Optional, Annotated
 
-from fastapi import APIRouter, UploadFile, HTTPException, Query, Body
+from fastapi import APIRouter, UploadFile, HTTPException, Query, Body, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlmodel import select
@@ -121,7 +121,7 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
     return secret_metadata
 
 
-@router.delete("/vault/secret/{secret_id}", tags=["vault"])
+@router.delete("/vault/secret/{secret_id}", tags=["vault"], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
 
@@ -140,5 +140,5 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
         except OSError:
             raise HTTPException(status_code=HTTPStatus.PRECONDITION_FAILED)
 
-    session.delete(SecretMetadata, secret_id)
+    session.delete(secret_metadata)
     session.commit()
