@@ -22,7 +22,6 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
 
 
 def get_current_user_email(access_token: str = Cookie(None)) -> str:
-    print(access_token)
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

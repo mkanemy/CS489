@@ -6,10 +6,6 @@ import UploadElement from '../../components/uploadElement/UploadElement';
 import { useState } from 'react';
 import { VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
 
-function setData() {
-    
-}
-
 function HomeView() {
     const [searchText, setSearchText] = useState("");
     const [filterType, setFilterType] = useState("All");
