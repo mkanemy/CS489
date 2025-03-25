@@ -18,7 +18,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
 
     const decryptValue = async (id: number) => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/vault/secret/' + id, {
+            const response = await fetch(`http://127.0.0.1:8000/vault/secret/${encodeURIComponent(id)}`, {
                 credentials: "include",
                 headers: {
                     Accept: 'application/json',
@@ -93,7 +93,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/vault/secret/' + element.id, {
+            const response = await fetch(`http://127.0.0.1:8000/vault/secret/${encodeURIComponent(element.id)}`, {
                 method: 'DELETE',
                 credentials: "include",
                 headers: {
