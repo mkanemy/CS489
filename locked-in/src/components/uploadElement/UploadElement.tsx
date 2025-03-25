@@ -5,6 +5,18 @@ import { ElementType, VaultData, VaultElementInterface } from '../../interfaces/
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import FileDropzone from './FileDropzone';
 
+function postText(name: string, secret: string) {
+    fetch('http://127.0.0.1:8000/vault/add/string?name=' + name, {
+        method: 'POST',
+        credentials: "include",
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(secret),
+    });
+}
+
 function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultElementInterface[]) => void, userKey: string }>) {
     const [uploadType, setUploadType] = useState("Text");
     // const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
@@ -67,6 +79,7 @@ function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultEl
             if (uploadType === ElementType.Text) {
                 const value = secretRef.current ? secretRef.current.value : ""
                 const encryptedValue = await encryptValue(value);
+                postText(identifierName, encryptedValue);
                 setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" }]);
                 VaultData.push({ id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" });
                 if (secretRef.current) {
