@@ -8,7 +8,7 @@ import { Download, VisibilityOutlined } from '@mui/icons-material';
 import { getMimeType } from '../../util/util';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-function VaultElement({ index, element, userKey }: Readonly<{ index: number, element: VaultElementInterface, userKey: string }>) {
+function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ index: number, element: VaultElementInterface, userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
     const [copied, setCopied] = useState(false);
@@ -70,7 +70,8 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
             setDecryptedValue("****************");
             setShowSecret(!showSecret);
         } else {
-            setDecryptedValue(await decryptValue(element.id));
+            const val = await decryptValue(element.id);
+            setDecryptedValue(val ?? 'error');
             setShowSecret(!showSecret);
         }
     }
@@ -81,12 +82,36 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
             setShowFileName(!showFileName);
         } else {
             setShowFileName(!showFileName);
-            setFileName(await decryptValue(element.fileName));
+            // setFileName(await decryptValue(element.fileName));
         }
     }
 
     const deleteText = async () => {
-        // TODO - delete text
+        const confirmed = window.confirm("Are you sure you want to delete " + element.name + "?");
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/vault/secret/' + element.id, {
+                method: 'DELETE',
+                credentials: "include",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.error("Vault delete failed:", response.status);
+                return;
+            }
+
+            setRefreshKey(true);
+        } catch (error) {
+            console.error("Error fetching vault data:", error);
+            return 'error';
+        }
     }
 
     const deleteFile = async () => {
@@ -94,7 +119,8 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     }
 
     const copyDecryptSecret = async () => {
-        navigator.clipboard.writeText(await decryptValue(element.secret));
+        const val = await decryptValue(element.id);
+        navigator.clipboard.writeText(val ?? 'error');
         setCopied(true);
 
         setTimeout(() => {
@@ -104,7 +130,7 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     }
 
     const downloadFile = async () => {
-        setFileName(await decryptValue(element.fileName));
+        // setFileName(await decryptValue(element.fileName));
         const data = await decryptBuffer(element.secret);
         const blob = new Blob([data], { type: getMimeType(fileName) }); // Create a Blob object
         const url = URL.createObjectURL(blob); // Generate a URL for the Blob

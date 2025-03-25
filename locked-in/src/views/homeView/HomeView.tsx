@@ -65,7 +65,7 @@ function HomeView() {
                 }}
             >
                 <Box sx={{ order: { xs: 1, md: 0 }, width: '100%', maxWidth: { xs: '100%', md: '500px' }}}>
-                    <VaultList userKey={userKey} searchText={searchText} filterType={filterType} data={data}></VaultList>
+                    <VaultList setRefreshKey={setRefreshKey} userKey={userKey} searchText={searchText} filterType={filterType} data={data}></VaultList>
                 </Box>
                 <Box sx={{ order: { xs: 0, md: 1 }, width: '100%', maxWidth: { xs: '100%', md: '700px' }}}>
                     <UploadElement userKey={userKey} setRefreshKey={setRefreshKey}></UploadElement>
