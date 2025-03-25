@@ -1,12 +1,12 @@
 import { Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
 import './UploadElement.css'
 import { useRef, useState } from 'react';
-import { ElementType, VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
+import { ElementType, VaultElementInterface } from '../../interfaces/VaultElement';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import FileDropzone from './FileDropzone';
 
-function postText(name: string, secret: string) {
-    fetch('http://127.0.0.1:8000/vault/add/string?name=' + name, {
+async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => {}) {
+    await fetch('http://127.0.0.1:8000/vault/add/string?name=' + name, {
         method: 'POST',
         credentials: "include",
         headers: {
@@ -15,9 +15,11 @@ function postText(name: string, secret: string) {
         },
         body: JSON.stringify(secret),
     });
+
+    setRefreshKey(true);
 }
 
-function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultElementInterface[]) => void, userKey: string }>) {
+function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
     const [uploadType, setUploadType] = useState("Text");
     // const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
     const [identifierName, setIdentifierName] = useState("");
@@ -79,9 +81,7 @@ function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultEl
             if (uploadType === ElementType.Text) {
                 const value = secretRef.current ? secretRef.current.value : ""
                 const encryptedValue = await encryptValue(value);
-                postText(identifierName, encryptedValue);
-                setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" }]);
-                VaultData.push({ id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" });
+                postText(identifierName, encryptedValue, setRefreshKey);
                 if (secretRef.current) {
                     secretRef.current.value = "";
                 }
@@ -108,10 +108,9 @@ function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultEl
                     })
                 );
 
-                encryptedFiles.forEach(({ encryptedFileName, encryptedData }) => {
-                    setData([...VaultData, { id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName }]);
-                    VaultData.push({ id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName });
-                });
+                // encryptedFiles.forEach(({ encryptedFileName, encryptedData }) => {
+                //     // setData([...VaultData, { id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName }])
+                // });
 
                 setDroppedFiles([]);
             }

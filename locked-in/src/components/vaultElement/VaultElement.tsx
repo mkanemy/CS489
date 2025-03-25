@@ -16,9 +16,28 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     const [showFileName, setShowFileName] = useState(false);
     const [fileName, setFileName] = useState("");
 
-    const decryptValue = async (value: string) => {
-        const decoder = new TextDecoder();
-        return decoder.decode(await decryptBuffer(value));
+    const decryptValue = async (id: number) => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/vault/secret/' + id, {
+                credentials: "include",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.error("Vault fetch failed:", response.status);
+                return;
+            }
+
+            const data = await response.json();
+            const decoder = new TextDecoder();
+            return decoder.decode(await decryptBuffer(data));
+        } catch (error) {
+            console.error("Error fetching vault data:", error);
+            return 'error';
+        }
     };
 
     const decryptBuffer = async (value:string) => {
@@ -51,7 +70,7 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
             setDecryptedValue("****************");
             setShowSecret(!showSecret);
         } else {
-            setDecryptedValue(await decryptValue(element.secret));
+            setDecryptedValue(await decryptValue(element.id));
             setShowSecret(!showSecret);
         }
     }
