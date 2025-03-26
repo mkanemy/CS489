@@ -2,10 +2,11 @@ import { Card, Divider, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 function SignInCard() {
+    const apiUrl = import.meta.env.VITE_API_URL;
     let navigate = useNavigate();
 
     const handleLoginRedirect = () => {
-        window.location.href = "http://127.0.0.1:8000/login"; // Redirect to backend login
+        window.location.href = `${apiUrl}/login`; // Redirect to backend login
     };
 
     return (

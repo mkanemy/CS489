@@ -9,6 +9,7 @@ import { getMimeType } from '../../util/util';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ index: number, element: VaultElementInterface, userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
     const [copied, setCopied] = useState(false);
@@ -18,7 +19,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
 
     const decryptValue = async (id: number) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/vault/secret/${encodeURIComponent(id)}`, {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(id)}`, {
                 credentials: "include",
                 headers: {
                     Accept: 'application/json',
@@ -93,7 +94,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/vault/secret/${encodeURIComponent(element.id)}`, {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(element.id)}`, {
                 method: 'DELETE',
                 credentials: "include",
                 headers: {

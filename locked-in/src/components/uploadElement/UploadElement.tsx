@@ -6,7 +6,9 @@ import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import FileDropzone from './FileDropzone';
 
 async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => {}) {
-    await fetch(`http://127.0.0.1:8000/vault/add/string?name=${encodeURIComponent(name)}`, {
+    const apiUrl = import.meta.env.VITE_API_URL;
+
+    await fetch(`${apiUrl}/vault/add/string?name=${encodeURIComponent(name)}`, {
         method: 'POST',
         credentials: "include",
         headers: {

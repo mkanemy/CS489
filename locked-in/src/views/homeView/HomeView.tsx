@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { VaultElementInterface } from '../../interfaces/VaultElement';
 
 function HomeView() {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const [searchText, setSearchText] = useState("");
     const [filterType, setFilterType] = useState("All");
     const [userKey, setUserKey] = useState("");
@@ -17,7 +18,7 @@ function HomeView() {
         const fetchVaultData = async () => {
             setRefreshKey(false);
             try {
-                const response = await fetch('http://127.0.0.1:8000/vault', {
+                const response = await fetch(`${apiUrl}/vault`, {
                     credentials: "include",
                     headers: {
                         Accept: 'application/json',
