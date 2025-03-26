@@ -1,25 +1,21 @@
 import { Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
 import './UploadElement.css'
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ElementType, VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
 import FileDropzone from './FileDropzone';
 
-function UploadElement({ setData, userKey }: { setData: (value: VaultElementInterface[]) => void, userKey: string }) {
+function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultElementInterface[]) => void, userKey: string }>) {
     const [uploadType, setUploadType] = useState("Text");
-    const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
+    // const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
     const [identifierName, setIdentifierName] = useState("");
     const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const secretRef = useRef<HTMLInputElement | null>(null);
-    const fileRef = useRef<HTMLInputElement | null>(null);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        userKey;
         setUploadType(event.target.value);
     };
 
@@ -62,12 +58,25 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
     return (
         <form onSubmit={async (e) => {
             e.preventDefault();
+
+            if (isSubmitting) {
+                return;
+            }
+            setIsSubmitting(true);
+
             if (uploadType === ElementType.Text) {
-                const file = secretRef.current ? secretRef.current.value : ""
-                const encryptedValue = await encryptValue(file);
+                const value = secretRef.current ? secretRef.current.value : ""
+                const encryptedValue = await encryptValue(value);
                 setData([...VaultData, { id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" }]);
                 VaultData.push({ id: 10, name: identifierName, type: ElementType.Text, secret: encryptedValue, fileName: "" });
+                if (secretRef.current) {
+                    secretRef.current.value = "";
+                }
             } else if (uploadType === ElementType.File) {
+                if (droppedFiles.length == 0) {
+                    setErrorMsg('Please Upload a File');
+                    return;
+                }
                 const encryptedFiles = await Promise.all(
                     droppedFiles.map(async (file) => {
                         // Get buffer of file and file name
@@ -91,9 +100,16 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
                     VaultData.push({ id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName });
                 });
 
+                setDroppedFiles([]);
             }
+
+            setIdentifierName("");
+
+            setTimeout(() => {
+                setIsSubmitting(false);
+            }, 1500);
         }}>
-            <Stack className="UploadElement" sx={{ flexDirection: 'column', gap: '10px' }}>
+            <Stack className="UploadElement" sx={{ flexDirection: 'column', gap: '10px', marginTop: { xs: 0, md: '5vh' }, boxShadow: '0px 4px 20px rgba(0,0,0,0.3)' }}>
                 <Typography sx={{ fontSize: '1.3rem', fontWeight: 600 }}>
                     Upload {uploadType}
                 </Typography>
@@ -104,20 +120,20 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
 
                 <Divider sx={{ margin: '0px 0px 10px 0px', borderColor: 'lightgray' }} />
 
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <Stack>
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                             Expiry Date
                         </Typography>
                         <DatePicker slotProps={{ textField: { variant: "filled", hiddenLabel: true, focused: true, size: "small" } }} sx={{ input: { color: 'white' } }} value={expiryDate} onChange={(x) => { setExpiryDate(x ?? dayjs().add(1, 'year')) }} />
                     </Stack>
-                </LocalizationProvider>
+                </LocalizationProvider> */}
 
                 <Stack>
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                         Identifier Name
                     </Typography>
-                    <TextField placeholder={uploadType == "Text" ? "Example Pwd" : "example.txt"} value={identifierName} onChange={(x) => { setIdentifierName(x.target.value ?? "") }} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
+                    <TextField required placeholder={uploadType == "Text" ? "Example Pwd" : "example.txt"} value={identifierName} onChange={(x) => { setIdentifierName(x.target.value ?? "") }} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
                 </Stack>
 
                 {uploadType == ElementType.Text ?
@@ -125,17 +141,20 @@ function UploadElement({ setData, userKey }: { setData: (value: VaultElementInte
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                             Secret to Store
                         </Typography>
-                        <TextField placeholder="Secret" inputRef={secretRef} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
+                        <TextField required placeholder="Secret" inputRef={secretRef} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
                     </Stack>
                     :
-                    // <div>TODO - find a file drag and drop zone</div>
-                    <FileDropzone onFilesDrop={(files) => setDroppedFiles(files)} />
+                    <FileDropzone setDroppedFiles={(files) => setDroppedFiles(files)} droppedFiles={droppedFiles} setErrorMsg={setErrorMsg} />
                 }
+
+                    <Typography color='error' sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
+                        {errorMsg}
+                    </Typography>
 
                 <Button
                     variant="contained"
                     color="primary"
-                    sx={{ borderRadius: "8px", textTransform: "none", padding: "8px 25px", marginTop: '20px' }}
+                    sx={{ borderRadius: "8px", textTransform: "none", padding: "8px 25px" }}
                     type="submit"
                     endIcon={<FileUploadOutlinedIcon />}
                 >

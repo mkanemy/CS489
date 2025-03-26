@@ -1,10 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from webapi.auth.jwt import UserEmailDep
 
 router = APIRouter()
 
 
-@router.get("/health", tags=["health"])
-async def check_token_health(user_email: UserEmailDep):
-    return user_email
+@router.get("/health", tags=["health"], status_code=status.HTTP_200_OK)
+async def check_token_health(_: UserEmailDep):
+    return

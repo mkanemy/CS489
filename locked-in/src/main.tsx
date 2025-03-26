@@ -1,6 +1,5 @@
 
 import { createRoot } from 'react-dom/client'
-import './index.css'
 import LandingView from './views/landingView/LandingView'
 // import ProtectedHome from './views/protectedHome/ProtectedHome'
 import Home from './views/homeView/HomeView'

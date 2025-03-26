@@ -5,7 +5,7 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import List, Optional, Annotated
 
-from fastapi import APIRouter, UploadFile, HTTPException, Query, Body
+from fastapi import APIRouter, UploadFile, HTTPException, Query, Body, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlmodel import select
@@ -34,12 +34,15 @@ def sanity_check(secret_metadata: SecretMetadata, user_email: str):
 
 @router.get("/vault", tags=["vault"], response_model=List[SecretMetadataPublic])
 async def list_secret_metadata(user_email: UserEmailDep, session: SessionDep):
-    return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email==user_email)).all()
+    return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email == user_email)).all()
 
 
-@router.get("/vault/{secret_id}", tags=["vault"])
+@router.get("/vault/secret/{secret_id}", tags=["vault"])
 async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
+
+    if not secret_metadata:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     sanity_check(secret_metadata, user_email)
 
@@ -53,10 +56,13 @@ async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: Se
         return secret_string.secret_string
 
 
-@router.post("/vault/{secret_id}", tags=["vault"])
+@router.post("/vault/secret/{secret_id}", tags=["vault"])
 async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
                                  update: Annotated[SecretCreateUpdateModel, Query()], session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
+
+    if not secret_metadata:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     sanity_check(secret_metadata, user_email)
 
@@ -66,11 +72,14 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
         secret_metadata.name = update.name
 
     session.commit()
+    session.refresh(secret_metadata)
+
+    return secret_metadata
 
 
-@router.post("/vault/add_string", tags=["vault"])
+@router.post("/vault/add/string", tags=["vault"])
 async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
-                            secret_string: Annotated[str, Body()], session: SessionDep):
+                            secret_string: Annotated[bytes, Body()], session: SessionDep):
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
                                      type=SecretType.STRING)
     session.add(secret_metadata)
@@ -81,10 +90,13 @@ async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreat
     secret = SecretString(secret_id=secret_metadata.id, secret_string=secret_string)
     session.add(secret)
 
+    session.commit()
+    session.refresh(secret_metadata)
+
     return secret_metadata
 
 
-@router.post("/vault/add_file", tags=["vault"])
+@router.post("/vault/add/file", tags=["vault"])
 async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
                           secret_file: UploadFile, session: SessionDep):
     file_content: bytes = await secret_file.read()
@@ -103,12 +115,18 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
     secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
     session.add(secret)
 
+    session.commit()
+    session.refresh(secret_metadata)
+
     return secret_metadata
 
 
-@router.delete("/vault/{secret_id}", tags=["vault"])
+@router.delete("/vault/secret/{secret_id}", tags=["vault"], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_secret(user_email: UserEmailDep, secret_id: int, session: SessionDep):
     secret_metadata = session.get(SecretMetadata, secret_id)
+
+    if not secret_metadata:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     sanity_check(secret_metadata, user_email)
 
@@ -122,4 +140,5 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
         except OSError:
             raise HTTPException(status_code=HTTPStatus.PRECONDITION_FAILED)
 
-    session.delete(SecretMetadata, secret_id)
+    session.delete(secret_metadata)
+    session.commit()

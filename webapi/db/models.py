@@ -11,7 +11,7 @@ class SecretType(str, Enum):
 
 
 class SecretMetadataBase(SQLModel):
-    name: str = Field(unique=True)
+    name: str = Field()
     type: SecretType = Field(index=True)
     expires_at: Optional[datetime] = Field(default=None)
 
