@@ -49,7 +49,7 @@ async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: Se
     if secret_metadata.type == SecretType.FILE:
         secret_file = session.get(SecretFile, secret_id)
 
-        return FileResponse(secret_file.secret_file_path)
+        return FileResponse(syspath(secret_file.secret_file_name))
     else:
         secret_string = session.get(SecretString, secret_id)
 
@@ -101,7 +101,7 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
                           secret_file: UploadFile, session: SessionDep):
     file_content: bytes = await secret_file.read()
     file_name: str = uuid.uuid4().hex
-    storage_path: Path = syspath(file_name=file_name)
+    storage_path: Path = syspath(file_name)
 
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
                                      type=SecretType.FILE)
@@ -112,7 +112,7 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
     session.commit()
     session.refresh(secret_metadata)
 
-    secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
+    secret = SecretFile(secret_id=secret_metadata.id, secret_file_name=file_name)
     session.add(secret)
 
     session.commit()
@@ -134,7 +134,7 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
         secret_file = session.get(SecretFile, secret_id)
 
         try:
-            pathlib.Path.unlink(secret_file.secret_file_path)
+            pathlib.Path.unlink(syspath(secret_file.secret_file_name))
         except FileNotFoundError:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
         except OSError:
