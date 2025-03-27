@@ -141,7 +141,7 @@ function UploadElement({ setData, userKey }: Readonly<{ setData: (value: VaultEl
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                             Secret to Store
                         </Typography>
-                        <TextField required placeholder="Secret" inputRef={secretRef} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
+                        <TextField required placeholder="Secret (Max. 256 Characters)" inputRef={secretRef} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" inputProps={{ maxLength: 256 }}  />
                     </Stack>
                     :
                     <FileDropzone setDroppedFiles={(files) => setDroppedFiles(files)} droppedFiles={droppedFiles} setErrorMsg={setErrorMsg} />
