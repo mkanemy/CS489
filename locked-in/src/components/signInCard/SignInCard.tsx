@@ -1,9 +1,6 @@
 import { Card, Divider, Stack, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import './SignInCard.css';
 
 function SignInCard() {
-    let navigate = useNavigate();
 
     const handleLoginRedirect = () => {
         window.location.href = "http://127.0.0.1:8000/login"; // Redirect to backend login
