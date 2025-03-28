@@ -36,6 +36,7 @@ class SecretString(SQLModel, table=True):
 
 class SecretFile(SQLModel, table=True):
     secret_id: int = Field(index=True, primary_key=True, foreign_key="secretmetadata.id", ondelete="CASCADE")
+    secret_storage_name: str = Field()
     secret_file_name: str = Field()
 
     secret_metadata: Optional[SecretMetadata] = Relationship()
