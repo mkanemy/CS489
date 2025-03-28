@@ -1,9 +1,14 @@
 import { Card, Divider, Stack, Typography } from '@mui/material';
+<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
 
 function SignInCard() {
     const apiUrl = import.meta.env.VITE_API_URL;
     let navigate = useNavigate();
+=======
+
+function SignInCard() {
+>>>>>>> 03b5dc12f22f3758fc6377ad3d22e53cf7227b46
 
     const handleLoginRedirect = () => {
         window.location.href = `${apiUrl}/login`; // Redirect to backend login
