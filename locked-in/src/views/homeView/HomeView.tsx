@@ -3,14 +3,46 @@ import './HomeView.css'
 import VaultList from '../../components/vaultList/VaultList';
 import FilterOptions from '../../components/filterOptions/FilterOptions';
 import UploadElement from '../../components/uploadElement/UploadElement';
-import { useState } from 'react';
-import { VaultData, VaultElementInterface } from '../../interfaces/VaultElement';
+import { useEffect, useState } from 'react';
+import { VaultElementInterface } from '../../interfaces/VaultElement';
 
 function HomeView() {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const [searchText, setSearchText] = useState("");
     const [filterType, setFilterType] = useState("All");
     const [userKey, setUserKey] = useState("");
-    const [data, setData] = useState<VaultElementInterface[]>(VaultData);
+    const [data, setData] = useState<VaultElementInterface[]>([]);
+    const [refreshKey, setRefreshKey] = useState<Boolean>(true);
+
+    useEffect(() => {
+        const fetchVaultData = async () => {
+            setRefreshKey(false);
+            try {
+                const response = await fetch(`${apiUrl}/vault`, {
+                    credentials: "include",
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
+    
+                if (!response.ok) {
+                    console.error("Vault fetch failed:", response.status);
+                    return;
+                }
+    
+                const data = await response.json();
+                setData(data as VaultElementInterface[]);
+            } catch (error) {
+                console.error("Error fetching vault data:", error);
+            }
+        };
+    
+
+        if (refreshKey) {
+            fetchVaultData();
+        }
+    }, [refreshKey]);
     
     return (
         <Stack className="HomeView" sx={{ flexDirection: 'column', alignSelf: 'center' }}>
@@ -34,11 +66,10 @@ function HomeView() {
                 }}
             >
                 <Box sx={{ order: { xs: 1, md: 0 }, width: '100%', maxWidth: { xs: '100%', md: '500px' }}}>
-                    <VaultList userKey={userKey} searchText={searchText} filterType={filterType} data={data}></VaultList>
+                    <VaultList setRefreshKey={setRefreshKey} userKey={userKey} searchText={searchText} filterType={filterType} data={data}></VaultList>
                 </Box>
                 <Box sx={{ order: { xs: 0, md: 1 }, width: '100%', maxWidth: { xs: '100%', md: '700px' }}}>
-                    {/* TODO - remove the callback here cuz we will get from backend */}
-                    <UploadElement userKey={userKey} setData={setData}></UploadElement>
+                    <UploadElement userKey={userKey} setRefreshKey={setRefreshKey}></UploadElement>
                 </Box>
             </Stack>
         </Stack>

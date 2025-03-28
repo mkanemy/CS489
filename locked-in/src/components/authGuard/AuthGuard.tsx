@@ -3,11 +3,12 @@ import { Navigate } from 'react-router-dom'
 
 const AuthGuard = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/health', {credentials: "include"})
+        const response = await fetch(`${apiUrl}/health`, {credentials: "include"})
         console.error("test")
         console.error(response.status)
         if (response.status === 200) {

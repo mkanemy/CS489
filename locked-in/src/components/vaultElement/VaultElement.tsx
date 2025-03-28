@@ -8,7 +8,8 @@ import { Download, VisibilityOutlined } from '@mui/icons-material';
 import { getMimeType } from '../../util/util';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-function VaultElement({ index, element, userKey }: Readonly<{ index: number, element: VaultElementInterface, userKey: string }>) {
+function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ index: number, element: VaultElementInterface, userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
     const [copied, setCopied] = useState(false);
@@ -17,9 +18,28 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     const [showFileName, setShowFileName] = useState(false);
     const [fileName, setFileName] = useState("");
 
-    const decryptValue = async (value: string) => {
-        const decoder = new TextDecoder();
-        return decoder.decode(await decryptBuffer(value));
+    const decryptValue = async (id: number) => {
+        try {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(id)}`, {
+                credentials: "include",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.error("Vault fetch failed:", response.status);
+                return;
+            }
+
+            const data = await response.json();
+            const decoder = new TextDecoder();
+            return decoder.decode(await decryptBuffer(data));
+        } catch (error) {
+            console.error("Error fetching vault data:", error);
+            return 'error';
+        }
     };
 
     const decryptBuffer = async (value:string) => {
@@ -52,9 +72,13 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
             setDecryptedValue("****************");
             setShowSecret(!showSecret);
         } else {
-            let decrypted = await decryptValue(element.secret);
-            setDecryptedValue(decrypted.length > MAX_SECRET_LENGTH ? decrypted.slice(0, MAX_SECRET_LENGTH) + "..." : decrypted);
-            setShowSecret(true);
+            const val = await decryptValue(element.id);
+            if (val) {
+                setDecryptedValue(val.length > MAX_SECRET_LENGTH ? val.slice(0, MAX_SECRET_LENGTH) + "..." : val);
+            } else {
+                setDecryptedValue("error")
+            }
+            setShowSecret(!showSecret);
         }
     }
 
@@ -64,12 +88,36 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
             setShowFileName(!showFileName);
         } else {
             setShowFileName(!showFileName);
-            setFileName(await decryptValue(element.fileName));
+            // setFileName(await decryptValue(element.fileName));
         }
     }
 
     const deleteText = async () => {
-        // TODO - delete text
+        const confirmed = window.confirm("Are you sure you want to delete " + element.name + "?");
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(element.id)}`, {
+                method: 'DELETE',
+                credentials: "include",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.error("Vault delete failed:", response.status);
+                return;
+            }
+
+            setRefreshKey(true);
+        } catch (error) {
+            console.error("Error fetching vault data:", error);
+            return 'error';
+        }
     }
 
     const deleteFile = async () => {
@@ -77,7 +125,8 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     }
 
     const copyDecryptSecret = async () => {
-        navigator.clipboard.writeText(await decryptValue(element.secret));
+        const val = await decryptValue(element.id);
+        navigator.clipboard.writeText(val ?? 'error');
         setCopied(true);
 
         setTimeout(() => {
@@ -87,7 +136,7 @@ function VaultElement({ index, element, userKey }: Readonly<{ index: number, ele
     }
 
     const downloadFile = async () => {
-        setFileName(await decryptValue(element.fileName));
+        // setFileName(await decryptValue(element.fileName));
         const data = await decryptBuffer(element.secret);
         const blob = new Blob([data], { type: getMimeType(fileName) }); // Create a Blob object
         const url = URL.createObjectURL(blob); // Generate a URL for the Blob

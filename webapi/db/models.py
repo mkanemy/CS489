@@ -6,8 +6,8 @@ from sqlmodel import Field, SQLModel, Relationship
 
 
 class SecretType(str, Enum):
-    STRING = "string"
-    FILE = "file"
+    STRING = "Text"
+    FILE = "File"
 
 
 class SecretMetadataBase(SQLModel):
