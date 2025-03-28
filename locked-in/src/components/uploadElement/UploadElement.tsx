@@ -22,6 +22,28 @@ async function postText(name: string, secret: string, setRefreshKey: (bool: Bool
     setRefreshKey(true);
 }
 
+async function postFile(name: string, encryptedFile: string, fileName: string, setRefreshKey: (bool: Boolean) => {}) {
+    // Format file content for upload
+    const file = new File([encryptedFile], fileName, {
+        type: "application/octet-stream",
+    });
+
+    const formData = new FormData();
+    formData.append("secret_file", file);
+    formData.append("file_name", fileName);
+
+    await fetch(`http://127.0.0.1:8000/vault/add/file?name=${encodeURIComponent(name)}`, {
+        method: 'POST',
+        credentials: "include",
+        headers: {
+            Accept: 'application/json',
+        },
+        body: formData,
+    });
+
+    setRefreshKey(true);
+}
+
 function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
     const [uploadType, setUploadType] = useState("Text");
     // const [expiryDate, setExpiryDate] = useState(dayjs().add(1, 'year'));
@@ -108,27 +130,17 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                     setErrorMsg('Please Upload a File');
                     return;
                 }
-                const encryptedFiles = await Promise.all(
+                await Promise.all(
                     droppedFiles.map(async (file) => {
                         // Get buffer of file and file name
                         const fileBuffer = await file.arrayBuffer();
 
-                        // Encrypt file content
-                        const encryptedData = await encryptBuffer(fileBuffer)
+                        const encryptedFile = await encryptBuffer(fileBuffer)
+                        const encryptedFileName = await encryptValue(file.name)
 
-                        // Encrypt file name
-                        const encryptedName = await encryptValue(file.name)
-
-                        return {
-                            encryptedFileName: encryptedName,
-                            encryptedData: encryptedData
-                        };
+                        postFile(identifierName, encryptedFile, encryptedFileName, setRefreshKey);
                     })
                 );
-
-                // encryptedFiles.forEach(({ encryptedFileName, encryptedData }) => {
-                //     // setData([...VaultData, { id: 10, name: identifierName, type: ElementType.File, secret: encryptedData, fileName: encryptedFileName }])
-                // });
 
                 setDroppedFiles([]);
             }
@@ -199,9 +211,9 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                     <FileDropzone setDroppedFiles={(files) => setDroppedFiles(files)} droppedFiles={droppedFiles} setErrorMsg={setErrorMsg} />
                 }
 
-                    <Typography color='error' sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
-                        {errorMsg}
-                    </Typography>
+                <Typography color='error' sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
+                    {errorMsg}
+                </Typography>
 
                 <Button
                     variant="contained"

@@ -5,7 +5,6 @@ import { ElementType, VaultElementInterface } from '../../interfaces/VaultElemen
 import './VaultElement.css'
 import { useState } from 'react';
 import { Download, VisibilityOutlined } from '@mui/icons-material';
-import { getMimeType } from '../../util/util';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ index: number, element: VaultElementInterface, userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
@@ -42,6 +41,22 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }
     };
 
+    const decryptFile = async (id: number) => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/vault/secret/${encodeURIComponent(id)}`, {
+                credentials: "include",
+            });
+            const blob = await response.blob();
+            const encryptedFile = await blob.text(); // this gives you base64 string
+    
+            const decryptedArrayBuffer = await decryptFileBuffer(encryptedFile);
+            return decryptedArrayBuffer;
+        } catch (error) {
+            console.error("Error fetching vault data:", error);
+            return 'error';
+        }
+    };    
+
     const decryptBuffer = async (value:string) => {
         const encoder = new TextEncoder();
 
@@ -67,6 +82,39 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         return decryptedBuffer
     }
 
+    const decryptFileBuffer = async (value: string | ArrayBuffer) => {
+        const encoder = new TextEncoder();
+    
+        // If it's a string, parse the base64 and JSON
+        let iv, ciphertext;
+        if (typeof value === 'string') {
+            const jsonStr = atob(value); // decode base64
+            const data = JSON.parse(jsonStr);
+            iv = new Uint8Array(data.iv);
+            ciphertext = new Uint8Array(data.ciphertext);
+        } else {
+            throw new Error("Expected a base64 string, but got binary buffer.");
+        }
+    
+        const keyBuffer = await window.crypto.subtle.digest("SHA-256", encoder.encode(userKey));
+        const key = await window.crypto.subtle.importKey(
+            "raw",
+            keyBuffer,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["decrypt"]
+        );
+    
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv },
+            key,
+            ciphertext
+        );
+    
+        return decryptedBuffer;
+    };
+    
+
     const showDecryptSecret = async () => {
         if (showSecret) {
             setDecryptedValue("****************");
@@ -82,17 +130,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }
     }
 
-    const showDecryptFileName = async () => {
-        if (showFileName) {
-            setFileName("****************");
-            setShowFileName(!showFileName);
-        } else {
-            setShowFileName(!showFileName);
-            // setFileName(await decryptValue(element.fileName));
-        }
-    }
-
-    const deleteText = async () => {
+    const deleteElement = async () => {
         const confirmed = window.confirm("Are you sure you want to delete " + element.name + "?");
         if (!confirmed) {
             return;
@@ -120,10 +158,6 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }
     }
 
-    const deleteFile = async () => {
-        // TODO - delete file
-    }
-
     const copyDecryptSecret = async () => {
         const val = await decryptValue(element.id);
         navigator.clipboard.writeText(val ?? 'error');
@@ -134,23 +168,39 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }, 1500);
 
     }
-
     const downloadFile = async () => {
-        // setFileName(await decryptValue(element.fileName));
-        const data = await decryptBuffer(element.secret);
-        const blob = new Blob([data], { type: getMimeType(fileName) }); // Create a Blob object
-        const url = URL.createObjectURL(blob); // Generate a URL for the Blob
-
-        const a = document.createElement("a"); // Create an anchor element
-        a.href = url;
-        a.download = fileName; // File name
-        document.body.appendChild(a);
-        a.click(); // Programmatically click the anchor
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url); // Clean up the URL object
+        try {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(element.id)}`, {
+                credentials: "include",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+    
+            const json = await response.json();
+            const encryptedFileContent = json.encrypted_file_content;
+            const encryptedFileName = json.encrypted_file_name;
+    
+            const decryptedFileNameBuf = await decryptBuffer(encryptedFileName);
+            const decryptedFileName = new TextDecoder().decode(decryptedFileNameBuf);
+    
+            const decryptedFileContent = await decryptFileBuffer(encryptedFileContent);
+    
+            const blob = new Blob([decryptedFileContent], { type: "application/octet-stream" });
+            const url = URL.createObjectURL(blob);
+    
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = decryptedFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error downloading file:", error);
+        }
     };
-
-
+    
     // UI for file item
     if (element.type === ElementType.File) {
         return (
@@ -159,22 +209,15 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
                     <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                         {element.name}
                     </Typography>
-                    <ButtonBase onClick={() => { deleteFile() }}>
-                        <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
-                    </ButtonBase>
+                    
+                <ButtonBase onClick={() => { deleteElement() }}>
+                    <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
+                </ButtonBase>
                 </Stack>
                 <Stack className="VaultElement-actions" sx={{ flexDirection: 'row', gap: '2rem' }}>
                     <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }}>
                         {showFileName ? fileName : "****************"}
                     </Typography>
-                    <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
-                        <ButtonBase onClick={() => { showDecryptFileName() }}>
-                            {showFileName ? <VisibilityOutlined /> : <VisibilityOffOutlinedIcon />}
-                            <Typography sx={{ fontSize: '1rem', fontWeight: 400 }}>
-                                Show
-                            </Typography>
-                        </ButtonBase>
-                    </Stack>
                     <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
                         <ButtonBase onClick={() => { downloadFile() }}>
                             <Download />
@@ -195,7 +238,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
                 <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                     {element.name}
                 </Typography>
-                <ButtonBase onClick={() => { deleteText() }}>
+                <ButtonBase onClick={() => { deleteElement() }}>
                     <DeleteOutlineIcon sx={{ color: "rgb(74, 160, 246)", height: '100%', alignSelf: 'center' }} />
                 </ButtonBase>
             </Stack>
