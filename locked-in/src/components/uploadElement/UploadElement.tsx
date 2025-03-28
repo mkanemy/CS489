@@ -30,7 +30,7 @@ async function postFile(name: string, encryptedFile: string, fileName: string, s
 
     const formData = new FormData();
     formData.append("secret_file", file);
-    formData.append("name", fileName);
+    formData.append("file_name", fileName);
 
     await fetch(`http://127.0.0.1:8000/vault/add/file?name=${encodeURIComponent(name)}`, {
         method: 'POST',

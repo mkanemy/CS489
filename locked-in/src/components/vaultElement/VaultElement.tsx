@@ -168,24 +168,39 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }, 1500);
 
     }
-
     const downloadFile = async () => {
-        // setFileName(await decryptValue(element.fileName));
-        const data = await decryptFile(element.id);
-        // const blob = new Blob([data], { type: getMimeType(fileName) }); // Create a Blob object
-        const blob = new Blob([data], { type: "png" }); // Create a Blob object
-        const url = URL.createObjectURL(blob); // Generate a URL for the Blob
-
-        const a = document.createElement("a"); // Create an anchor element
-        a.href = url;
-        a.download = "file.png"; // File name
-        document.body.appendChild(a);
-        a.click(); // Programmatically click the anchor
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url); // Clean up the URL object
+        try {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(element.id)}`, {
+                credentials: "include",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+    
+            const json = await response.json();
+            const encryptedFileContent = json.encrypted_file_content;
+            const encryptedFileName = json.encrypted_file_name;
+    
+            const decryptedFileNameBuf = await decryptBuffer(encryptedFileName);
+            const decryptedFileName = new TextDecoder().decode(decryptedFileNameBuf);
+    
+            const decryptedFileContent = await decryptFileBuffer(encryptedFileContent);
+    
+            const blob = new Blob([decryptedFileContent], { type: "application/octet-stream" });
+            const url = URL.createObjectURL(blob);
+    
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = decryptedFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error downloading file:", error);
+        }
     };
-
-
+    
     // UI for file item
     if (element.type === ElementType.File) {
         return (

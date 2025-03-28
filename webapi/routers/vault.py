@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Optional, Annotated
 
 from fastapi import APIRouter, UploadFile, HTTPException, Query, Body, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 from sqlmodel import select
 
@@ -48,12 +48,19 @@ async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: Se
 
     if secret_metadata.type == SecretType.FILE:
         secret_file = session.get(SecretFile, secret_id)
-        path = syspath(file_name=secret_file.secret_file_path)
+        path = syspath(file_name=secret_file.secret_storage_name)
+        file_name = secret_file.secret_file_name
 
-        return FileResponse(path)
+        with open(path, "r", encoding="utf-8") as f:
+            encrypted_content = f.read()
+
+        return JSONResponse(content={
+            "encrypted_file_name": file_name,
+            "encrypted_file_content": encrypted_content,
+        })
+
     else:
         secret_string = session.get(SecretString, secret_id)
-
         return secret_string.secret_string
 
 
@@ -115,11 +122,11 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
     session.commit()
     session.refresh(secret_metadata)
 
-    secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
+    secret = SecretFile(secret_id=secret_metadata.id, secret_storage_name=storage_name, secret_file_name=file_name, secret_metadata=secret_metadata)
     session.add(secret)
 
     session.commit()
-    session.refresh(secret_metadata)
+    session.refresh(secret)
 
     return secret_metadata
 
@@ -135,10 +142,10 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
 
     if secret_metadata.type == SecretType.FILE:
         secret_file = session.get(SecretFile, secret_id)
-        storage_path: Path = syspath(file_name=secret_file.secret_file_path)
+        storage_path: Path = syspath(file_name=secret_file.secret_storage_name)
 
         try:
-            pathlib.Path.unlink(secret_file.secret_file_path)
+            pathlib.Path.unlink(storage_path)
         except FileNotFoundError:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
         except OSError:
