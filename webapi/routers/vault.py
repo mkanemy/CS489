@@ -80,7 +80,7 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
 
 @router.post("/vault/add/string", tags=["vault"])
 async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
-                            secret_string: Annotated[bytes, Body()], session: SessionDep):
+                            secret_string: Annotated[bytes, Body(max_length=256)], session: SessionDep):
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
                                      type=SecretType.STRING)
     session.add(secret_metadata)
@@ -101,8 +101,9 @@ async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreat
 async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
                           secret_file: UploadFile, session: SessionDep):
     file_content: bytes = await secret_file.read()
-    file_name: str = uuid.uuid4().hex
-    storage_path: Path = syspath(file_name=file_name)
+    file_name: str = secret_file.filename
+    storage_name: str = uuid.uuid4().hex
+    storage_path: Path = syspath(storage_name)
 
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
                                      type=SecretType.FILE)
@@ -114,11 +115,11 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
     session.commit()
     session.refresh(secret_metadata)
 
-    secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=file_name)
+    secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
     session.add(secret)
 
     session.commit()
-    session.refresh(secret)
+    session.refresh(secret_metadata)
 
     return secret_metadata
 
@@ -137,7 +138,7 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
         storage_path: Path = syspath(file_name=secret_file.secret_file_path)
 
         try:
-            pathlib.Path.unlink(storage_path)
+            pathlib.Path.unlink(secret_file.secret_file_path)
         except FileNotFoundError:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
         except OSError:

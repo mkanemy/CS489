@@ -1,9 +1,10 @@
-import { Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
+import { IconButton, InputAdornment, Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
 import './UploadElement.css'
 import { useRef, useState } from 'react';
 import { ElementType, VaultElementInterface } from '../../interfaces/VaultElement';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import FileDropzone from './FileDropzone';
+import CasinoIcon from '@mui/icons-material/Casino';
 
 async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => {}) {
     const apiUrl = import.meta.env.VITE_API_URL;
@@ -93,6 +94,21 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
 
     }
 
+    const generateRandomPassword = (length = 32) => {
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+        let password = "";
+        const randomValues = new Uint32Array(length);
+        window.crypto.getRandomValues(randomValues);
+    
+        for (let i = 0; i < length; i++) {
+            password += charset[randomValues[i] % charset.length];
+        }
+    
+        return password;
+    };
+    
+    const [generatedSecret, setGeneratedSecret] = useState("");
+
     return (
         <form onSubmit={async (e) => {
             e.preventDefault();
@@ -167,7 +183,29 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                             Secret to Store
                         </Typography>
-                        <TextField required placeholder="Secret" inputRef={secretRef} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
+                        <TextField
+                            required
+                            placeholder="Secret"
+                            inputRef={secretRef}
+                            value={generatedSecret}
+                            onChange={(e) => setGeneratedSecret(e.target.value)}
+                            variant="filled"
+                            hiddenLabel
+                            sx={{ input: { color: 'white' } }}
+                            color="primary"
+                            focused
+                            size="small"
+                            inputProps={{ maxLength: 256 }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={() => setGeneratedSecret(generateRandomPassword())} edge="end" sx={{ color: 'white' }}>
+                                            <CasinoIcon />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
                     </Stack>
                     :
                     <FileDropzone setDroppedFiles={(files) => setDroppedFiles(files)} droppedFiles={droppedFiles} setErrorMsg={setErrorMsg} />

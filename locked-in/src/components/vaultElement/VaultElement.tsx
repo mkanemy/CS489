@@ -12,6 +12,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
     const [copied, setCopied] = useState(false);
+    const MAX_SECRET_LENGTH = 10;
 
     const [showFileName, setShowFileName] = useState(false);
     const [fileName, setFileName] = useState("");
@@ -120,7 +121,11 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
             setShowSecret(!showSecret);
         } else {
             const val = await decryptValue(element.id);
-            setDecryptedValue(val ?? 'error');
+            if (val) {
+                setDecryptedValue(val.length > MAX_SECRET_LENGTH ? val.slice(0, MAX_SECRET_LENGTH) + "..." : val);
+            } else {
+                setDecryptedValue("error")
+            }
             setShowSecret(!showSecret);
         }
     }
