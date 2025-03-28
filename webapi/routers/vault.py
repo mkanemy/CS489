@@ -48,8 +48,9 @@ async def get_secret_value(user_email: UserEmailDep, secret_id: int, session: Se
 
     if secret_metadata.type == SecretType.FILE:
         secret_file = session.get(SecretFile, secret_id)
+        path = syspath(file_name=secret_file.secret_file_path)
 
-        return FileResponse(secret_file.secret_file_path)
+        return FileResponse(path)
     else:
         secret_string = session.get(SecretString, secret_id)
 
@@ -107,16 +108,17 @@ async def add_secret_file(user_email: UserEmailDep, add: Annotated[SecretCreateU
                                      type=SecretType.FILE)
     session.add(secret_metadata)
 
+    storage_path.parent.mkdir(parents=True, exist_ok=True)
     await write(file_content, storage_path)
 
     session.commit()
     session.refresh(secret_metadata)
 
-    secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=storage_path)
+    secret = SecretFile(secret_id=secret_metadata.id, secret_file_path=file_name)
     session.add(secret)
 
     session.commit()
-    session.refresh(secret_metadata)
+    session.refresh(secret)
 
     return secret_metadata
 
@@ -132,9 +134,10 @@ async def delete_secret(user_email: UserEmailDep, secret_id: int, session: Sessi
 
     if secret_metadata.type == SecretType.FILE:
         secret_file = session.get(SecretFile, secret_id)
+        storage_path: Path = syspath(file_name=secret_file.secret_file_path)
 
         try:
-            pathlib.Path.unlink(secret_file.secret_file_path)
+            pathlib.Path.unlink(storage_path)
         except FileNotFoundError:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
         except OSError:
