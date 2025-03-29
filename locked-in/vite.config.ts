@@ -8,12 +8,4 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
   },
-  build: {
-    lib: {
-      entry: 'src/main.tsx',
-      name: 'LockedIn',
-      fileName: 'locked-in-frontend',
-      formats: ['es'],
-    }
-  },
 })
