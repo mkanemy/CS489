@@ -1,28 +1,40 @@
-import { IconButton, InputAdornment, Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material'
+import { IconButton, InputAdornment, Button, Divider, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography, Alert, Box, Snackbar } from '@mui/material'
 import './UploadElement.css'
 import { useRef, useState } from 'react';
 import { ElementType, VaultElementInterface } from '../../interfaces/VaultElement';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import FileDropzone from './FileDropzone';
 import CasinoIcon from '@mui/icons-material/Casino';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
-async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => void) {
+async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => void) : Promise<Boolean> {
     const apiUrl = import.meta.env.VITE_API_URL;
 
-    await fetch(`${apiUrl}/vault/add/string?name=${encodeURIComponent(name)}`, {
-        method: 'POST',
-        credentials: "include",
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(secret),
-    });
+    try {
+        let res = await fetch(`${apiUrl}/vault/add/string?name=${encodeURIComponent(name)}`, {
+            method: 'POST',
+            credentials: "include",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(secret),
+        })
 
-    setRefreshKey(true);
+        if (!res.ok) {
+            console.error("failed:", res.status);
+            return false;
+        }
+
+        setRefreshKey(true);
+        return true;
+    } catch (error) {
+        console.error("error:", error);
+        return false;
+    }
 }
 
-async function postFile(name: string, encryptedFile: string, fileName: string, setRefreshKey: (bool: Boolean) => void) {
+async function postFile(name: string, encryptedFile: string, fileName: string, setRefreshKey: (bool: Boolean) => void) : Promise<Boolean> {
     // Format file content for upload
     const file = new File([encryptedFile], fileName, {
         type: "application/octet-stream",
@@ -32,16 +44,27 @@ async function postFile(name: string, encryptedFile: string, fileName: string, s
     formData.append("secret_file", file);
     formData.append("file_name", fileName);
 
-    await fetch(`http://127.0.0.1:8000/vault/add/file?name=${encodeURIComponent(name)}`, {
-        method: 'POST',
-        credentials: "include",
-        headers: {
-            Accept: 'application/json',
-        },
-        body: formData,
-    });
+    try {
+        let res = await fetch(`http://127.0.0.1:8000/vault/add/file?name=${encodeURIComponent(name)}`, {
+            method: 'POST',
+            credentials: "include",
+            headers: {
+                Accept: 'application/json',
+            },
+            body: formData,
+        })
 
-    setRefreshKey(true);
+        if (!res.ok) {
+            console.error("failed:", res.status);
+            return false;
+        }
+
+        setRefreshKey(true);
+        return true;
+    } catch (error) {
+        console.error("error:", error);
+        return false;
+    }
 }
 
 function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, setRefreshKey: (bool: Boolean) => void }>) {
@@ -51,6 +74,8 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
     const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
     const [errorMsg, setErrorMsg] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [open, setOpen] = useState(false);
 
     const secretRef = useRef<HTMLInputElement | null>(null);
 
@@ -121,7 +146,10 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
             if (uploadType === ElementType.Text) {
                 const value = secretRef.current ? secretRef.current.value : ""
                 const encryptedValue = await encryptValue(value);
-                postText(identifierName, encryptedValue, setRefreshKey);
+                if (!(await postText(identifierName, encryptedValue, setRefreshKey))) {
+                    setError("Error uploading secret!");
+                    setOpen(true);
+                }
                 if (secretRef.current) {
                     secretRef.current.value = "";
                 }
@@ -138,7 +166,10 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                         const encryptedFile = await encryptBuffer(fileBuffer)
                         const encryptedFileName = await encryptValue(file.name)
 
-                        postFile(identifierName, encryptedFile, encryptedFileName, setRefreshKey);
+                        if (!(await postFile(identifierName, encryptedFile, encryptedFileName, setRefreshKey))) {
+                            setError("Error uploading file!");
+                            setOpen(true);
+                        }
                     })
                 );
 
@@ -225,6 +256,28 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                     Upload
                 </Button>
             </Stack>
+            <Snackbar
+                open={open}
+                autoHideDuration={4000}
+                onClose={() => setOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                >
+                <Alert
+                    severity="error"
+                    sx={{
+                    mt: 2,
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    color: '#ffb4b4',
+                    border: '1px solid #ff4d4d',
+                    fontWeight: 500,
+                    }}
+                    iconMapping={{
+                    error: <ErrorOutlineIcon fontSize="small" sx={{ color: '#ff4d4d' }} />
+                    }}
+                >
+                    {error}
+                </Alert>
+            </Snackbar>
         </form>
     )
 }

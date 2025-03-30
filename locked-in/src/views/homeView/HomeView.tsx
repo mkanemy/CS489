@@ -16,6 +16,7 @@ function HomeView() {
 
     useEffect(() => {
         const fetchVaultData = async () => {
+            setData([]);
             setRefreshKey(false);
             try {
                 const response = await fetch(`${apiUrl}/vault`, {
