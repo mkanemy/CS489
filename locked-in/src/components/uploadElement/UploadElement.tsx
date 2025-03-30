@@ -175,7 +175,7 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
                         Identifier Name
                     </Typography>
-                    <TextField required placeholder={uploadType == "Text" ? "Example Pwd" : "example.txt"} value={identifierName} onChange={(x) => { setIdentifierName(x.target.value ?? "") }} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
+                    <TextField required inputProps={{ maxLength: 128 }} placeholder={uploadType == "Text" ? "Example Pwd" : "example.txt"} value={identifierName} onChange={(x) => { setIdentifierName(x.target.value ?? "") }} variant="filled" hiddenLabel sx={{ input: { color: 'white' } }} color="primary" focused size="small" />
                 </Stack>
 
                 {uploadType == ElementType.Text ?
@@ -195,16 +195,16 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                             color="primary"
                             focused
                             size="small"
-                            inputProps={{ maxLength: 256 }}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton onClick={() => setGeneratedSecret(generateRandomPassword())} edge="end" sx={{ color: 'white' }}>
-                                            <CasinoIcon />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
+                            inputProps={{ maxLength: 128 }}
+                            // InputProps={{
+                            //     endAdornment: (
+                            //         <InputAdornment position="end">
+                            //             <IconButton onClick={() => setGeneratedSecret(generateRandomPassword())} edge="end" sx={{ color: 'white' }}>
+                            //                 <CasinoIcon />
+                            //             </IconButton>
+                            //         </InputAdornment>
+                            //     ),
+                            // }}
                         />
                     </Stack>
                     :

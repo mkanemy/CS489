@@ -65,10 +65,10 @@ function HomeView() {
                     gap: '1rem'
                 }}
             >
-                <Box sx={{ order: { xs: 1, md: 0 }, width: '100%', maxWidth: { xs: '100%', md: '500px' }}}>
+                <Box sx={{ order: { xs: 1, md: 0 }, width: '100%', maxWidth: { xs: '100%', md: '60%' }}}>
                     <VaultList setRefreshKey={setRefreshKey} userKey={userKey} searchText={searchText} filterType={filterType} data={data}></VaultList>
                 </Box>
-                <Box sx={{ order: { xs: 0, md: 1 }, width: '100%', maxWidth: { xs: '100%', md: '700px' }}}>
+                <Box sx={{ order: { xs: 0, md: 1 }, width: '100%', maxWidth: { xs: '100%', md: '40%' }}}>
                     <UploadElement userKey={userKey} setRefreshKey={setRefreshKey}></UploadElement>
                 </Box>
             </Stack>

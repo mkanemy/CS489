@@ -6,8 +6,28 @@
 
 .VaultElement-title {
     width: fit-content;
+    max-width: 90%;
+}
+
+.VaultElement-title p {
+    width: fit-content;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
 }
 
 .VaultElement-actions {
     margin-top: 10px;
+}
+
+
+.VaultElement-actions .secret {
+    width: fit-content;
+    max-width: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
 }

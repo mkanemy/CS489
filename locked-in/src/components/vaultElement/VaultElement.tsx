@@ -122,7 +122,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         } else {
             const val = await decryptValue(element.id);
             if (val) {
-                setDecryptedValue(val.length > MAX_SECRET_LENGTH ? val.slice(0, MAX_SECRET_LENGTH) + "..." : val);
+                setDecryptedValue(val);
             } else {
                 setDecryptedValue("error")
             }
@@ -235,7 +235,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
     return (
         <Stack className="VaultElement" sx={{ flexDirection: 'column', alignSelf: 'left', minWidth: '30vw' }}>
             <Stack className="VaultElement-title" sx={{ flexDirection: 'row', gap: '1em' }}>
-                <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
+                <Typography title={element.name} sx={{ fontSize: '1.5rem', fontWeight: 600 }}>
                     {element.name}
                 </Typography>
                 <ButtonBase onClick={() => { deleteElement() }}>
@@ -243,7 +243,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
                 </ButtonBase>
             </Stack>
             <Stack className="VaultElement-actions" sx={{ flexDirection: 'row', gap: '2rem' }}>
-                <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }}>
+                <Typography title={showSecret === true ? decryptedValue : "****************"} sx={{ fontSize: '1.25rem', fontWeight: 600, width: 120 }} className="secret">
                     {showSecret === true ? decryptedValue : "****************"}
                 </Typography>
                 <Stack sx={{ flexDirection: 'row', gap: '0.3rem' }}>
