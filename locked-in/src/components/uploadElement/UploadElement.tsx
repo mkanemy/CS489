@@ -35,6 +35,7 @@ async function postText(name: string, secret: string, setRefreshKey: (bool: Bool
 }
 
 async function postFile(name: string, encryptedFile: string, fileName: string, setRefreshKey: (bool: Boolean) => void) : Promise<Boolean> {
+    const apiUrl = import.meta.env.VITE_API_URL;
     // Format file content for upload
     const file = new File([encryptedFile], fileName, {
         type: "application/octet-stream",
@@ -45,7 +46,7 @@ async function postFile(name: string, encryptedFile: string, fileName: string, s
     formData.append("file_name", fileName);
 
     try {
-        let res = await fetch(`http://127.0.0.1:8000/vault/add/file?name=${encodeURIComponent(name)}`, {
+        let res = await fetch(`${apiUrl}/vault/add/file?name=${encodeURIComponent(name)}`, {
             method: 'POST',
             credentials: "include",
             headers: {

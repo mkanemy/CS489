@@ -43,7 +43,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
 
     const decryptFile = async (id: number) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/vault/secret/${encodeURIComponent(id)}`, {
+            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(id)}`, {
                 credentials: "include",
             });
             const blob = await response.blob();
