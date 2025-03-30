@@ -6,7 +6,7 @@ import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import FileDropzone from './FileDropzone';
 import CasinoIcon from '@mui/icons-material/Casino';
 
-async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => {}) {
+async function postText(name: string, secret: string, setRefreshKey: (bool: Boolean) => void) {
     const apiUrl = import.meta.env.VITE_API_URL;
 
     await fetch(`${apiUrl}/vault/add/string?name=${encodeURIComponent(name)}`, {
@@ -22,7 +22,7 @@ async function postText(name: string, secret: string, setRefreshKey: (bool: Bool
     setRefreshKey(true);
 }
 
-async function postFile(name: string, encryptedFile: string, fileName: string, setRefreshKey: (bool: Boolean) => {}) {
+async function postFile(name: string, encryptedFile: string, fileName: string, setRefreshKey: (bool: Boolean) => void) {
     // Format file content for upload
     const file = new File([encryptedFile], fileName, {
         type: "application/octet-stream",
