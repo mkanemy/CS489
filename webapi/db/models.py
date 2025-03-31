@@ -46,4 +46,4 @@ class User(SQLModel, table=True):
     email: str = Field(primary_key=True)
     master_key_hash: bytes = Field(nullable=False)
 
-    secret_metadata_list: list[SecretMetadata] = Relationship(back_populates="secretmetadata", cascade_delete=True)
+    secret_metadata_list: list[SecretMetadata] = Relationship(cascade_delete=True)
