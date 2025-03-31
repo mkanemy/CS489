@@ -132,12 +132,16 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
     
         return password;
     };
-    
-    const [generatedSecret, setGeneratedSecret] = useState("");
 
     return (
         <form onSubmit={async (e) => {
             e.preventDefault();
+
+            if (!userKey || userKey.length === 0) {
+                alert("ERROR: User Key not detected");
+                window.location.reload();
+                return;
+            }
 
             if (isSubmitting) {
                 return;
@@ -219,8 +223,6 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                             required
                             placeholder="Secret"
                             inputRef={secretRef}
-                            value={generatedSecret}
-                            onChange={(e) => setGeneratedSecret(e.target.value)}
                             variant="filled"
                             hiddenLabel
                             sx={{ input: { color: 'white' } }}
@@ -228,15 +230,15 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                             focused
                             size="small"
                             inputProps={{ maxLength: 128 }}
-                            // InputProps={{
-                            //     endAdornment: (
-                            //         <InputAdornment position="end">
-                            //             <IconButton onClick={() => setGeneratedSecret(generateRandomPassword())} edge="end" sx={{ color: 'white' }}>
-                            //                 <CasinoIcon />
-                            //             </IconButton>
-                            //         </InputAdornment>
-                            //     ),
-                            // }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={() => {secretRef.current ? secretRef.current.value = generateRandomPassword() : null}} edge="end" sx={{ color: 'white' }}>
+                                            <CasinoIcon />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
                         />
                     </Stack>
                     :

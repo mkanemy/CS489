@@ -131,6 +131,13 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
     }
 
     const deleteElement = async () => {
+
+        if (!userKey || userKey.length === 0) {
+            alert("ERROR: User Key not detected");
+            window.location.reload();
+            return;
+        }
+
         const confirmed = window.confirm("Are you sure you want to delete " + element.name + "?");
         if (!confirmed) {
             return;
@@ -148,6 +155,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
 
             if (!response.ok) {
                 console.error("Vault delete failed:", response.status);
+                setRefreshKey(true);
                 return;
             }
 

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from .db.database import create_db_and_tables
-from .routers import vault, auth, health
+from .routers import vault, auth, health, user
 
 # Load environment variables
 load_dotenv(override=True)
@@ -41,3 +41,4 @@ app.add_middleware(
 app.include_router(vault.router)
 app.include_router(auth.router)
 app.include_router(health.router)
+app.include_router(user.router)

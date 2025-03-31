@@ -10,13 +10,15 @@ from webapi.db.models import User
 
 router = APIRouter()
 
-SALT = os.getenv("SALT").encode("utf8")
-
 
 @router.post("/user/register_master_key", tags=["user"], status_code=status.HTTP_201_CREATED)
 async def register_master_key_hash(user_email: UserEmailDep, master_key_hash: Annotated[bytes, Body()],
                                    session: SessionDep):
-    session.delete(User, user_email)
+    SALT = os.getenv("SALT").encode("utf8")
+    
+    user = session.get(User, user_email)
+    if user:
+        session.delete(user)
 
     user = User(email=user_email, master_key_hash=bcrypt.hashpw(master_key_hash, SALT))
     session.add(user)

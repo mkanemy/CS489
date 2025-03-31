@@ -1,49 +1,204 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-function UserKeyPopup({setUserKey}: Readonly<{setUserKey: (input: string) => void}>) {
+function UserKeyPopup({setUserKey, userKey}: Readonly<{setUserKey: (input: string) => void, userKey: string}>) {
     const [open, setOpen] = useState(true);
+    const [isRegistered, setIsRegistered] = useState(false);
+    const [reset, setReset] = useState(false);
+    const [error, setError] = useState<string | undefined>(undefined);
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     const handleOpenClose = () => {
         setOpen(!open);
     };
+
+    useEffect(() => {
+        const checkRegister = async () => {
+            const res = await fetch(`${apiUrl}/user/check_registration`, {
+                method: 'GET',
+                credentials: "include",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
     
+            if (!res.ok && res.status === 404) {
+                setIsRegistered(false);
+                return;
+            }
+            
+            setIsRegistered(true);
+        }
+
+        if (userKey && userKey.length > 1) {
+            handleOpenClose();
+            return;
+        }
+
+        checkRegister();
+    }, []);
+    
+    if (reset) {
+        return (
+            <Dialog
+                    open={open}
+                    slotProps={{
+                        paper: {
+                            component: 'form',
+                            onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
+                                event.preventDefault();
+    
+                                const formData = new FormData(event.currentTarget);
+                                const key = formData.get("key") as string;
+    
+                                try {
+                                    const res = await fetch(`${apiUrl}/user/register_master_key`, {
+                                        method: 'POST',
+                                        credentials: "include",
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify(key)
+                                    });
+                            
+                                    if (!res.ok) {
+                                        const error = await res.text();
+                                        setError("Invalid Key");
+                                        return;
+                                    }
+                            
+                                    setUserKey(key);
+                                    handleOpenClose();
+                                } catch (err) {
+                                    console.error(err);
+                                    alert("Network error while verifying key.");
+                                }
+                            }
+                        }
+                    }}
+                >
+    
+                <DialogTitle>Enter Key</DialogTitle>
+                <DialogContent>
+                    <DialogContentText style={{fontWeight: 'bold', color: "#dc2626"}}>
+                    DANGER: If you reset your key, you will lose all your previous data!
+                    </DialogContentText>
+                    <DialogContentText style={{fontWeight: 'bold'}}>
+                        Make sure not to lose your key after resetting.
+                    </DialogContentText>
+                    <TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        id="key"
+                        name="key"
+                        label="Key"
+                        type="key"
+                        fullWidth
+                        onChange={() => {setError(undefined)}}
+                        variant="standard"
+                        slotProps={{
+                            htmlInput: {
+                                inputMode: "text",
+                                minLength: 16
+                            }
+                        }}
+                    />
+                    </DialogContent>
+                    <DialogActions style={{display: "flex", justifyContent: 'space-between', width: '95%', margin: '0 auto'}}>
+                        <Button type="submit" style={{ color: "#dc2626" }}>Reset Key</Button>
+                        <Button onClick={() => {setReset(false)}}>Back</Button>
+                    </DialogActions>
+                </Dialog>
+        )
+    }
+
     return (
         <Dialog
-            open={open}
-            slotProps={{
-                paper: {
-                    component: 'form',
-                    onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                        event.preventDefault();
-                        setUserKey(Object.fromEntries(((new FormData(event.currentTarget)) as any).entries()).key)
-                        handleOpenClose();
-                    }
-                }
-            }}
-        >
+                open={open}
+                slotProps={{
+                    paper: {
+                        component: 'form',
+                        onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
+                            event.preventDefault();
 
-        <DialogTitle>Enter Key</DialogTitle>
-        <DialogContent>
-            <DialogContentText>
-                The passphrase you enter is your key to enter your vault! Make sure you keep it secret, do not share it with anyone and do not forget it!
-            </DialogContentText>
-            <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="key"
-                name="key"
-                label="Key"
-                type="key"
-                fullWidth
-                variant="standard"
-            />
-            </DialogContent>
-            <DialogActions>
-                <Button type="submit">Enter Vault</Button>
-            </DialogActions>
-        </Dialog>
+                            const formData = new FormData(event.currentTarget);
+                            const key = formData.get("key") as string;
+
+                            try {
+                                if (isRegistered) {
+                                    const res = await fetch(`${apiUrl}/user/check_master_key?master_key_hash=${encodeURIComponent(key)}`, {
+                                        method: 'GET',
+                                        credentials: "include",
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                    });
+                            
+                                    if (!res.ok) {
+                                        const error = await res.text();
+                                        setError("Incorrect Key");
+                                        return;
+                                    }
+                                } else {
+                                    const res = await fetch(`${apiUrl}/user/register_master_key`, {
+                                        method: 'POST',
+                                        credentials: "include",
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify(key)
+                                    });
+                            
+                                    if (!res.ok) {
+                                        const error = await res.text();
+                                        setError("Invalid Key");
+                                        return;
+                                    }
+                                }
+                        
+                                setUserKey(key);
+                                handleOpenClose();
+                            } catch (err) {
+                                console.error(err);
+                                alert("Network error while verifying key.");
+                            }
+                        }
+                    }
+                }}
+            >
+
+            <DialogTitle>Enter Key</DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                The passphrase you enter is your key to access your vault. Keep it safe and private — do not share it and don’t forget it.
+                </DialogContentText>
+                <DialogContentText style={{fontWeight: 'bold'}}>
+                🔐 Important: If you lose your key, you won’t be able to access your data. For security reasons, we will have to delete everything so you can start fresh with a new key.
+                </DialogContentText>
+                <TextField
+                    autoFocus
+                    required
+                    margin="dense"
+                    id="key"
+                    name="key"
+                    label="Key"
+                    type="key"
+                    fullWidth
+                    onChange={() => {setError(undefined)}}
+                    variant="standard"
+                />
+                </DialogContent>
+                {error && 
+                    <DialogContentText style={{ color: "#dc2626", textAlign: 'center'}}>
+                        {error}
+                    </DialogContentText>
+                }
+                <DialogActions style={{display: "flex", justifyContent: 'space-between', width: '95%', margin: '0 auto'}}>
+                    <Button type="submit">Enter Vault</Button>
+                    <Button style={{ color: "#dc2626" }} onClick={() => {setReset(true)}}>Reset Key</Button>
+                </DialogActions>
+            </Dialog>
     )
 }
 

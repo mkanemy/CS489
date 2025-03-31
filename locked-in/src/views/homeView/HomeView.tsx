@@ -5,6 +5,7 @@ import FilterOptions from '../../components/filterOptions/FilterOptions';
 import UploadElement from '../../components/uploadElement/UploadElement';
 import { useEffect, useState } from 'react';
 import { VaultElementInterface } from '../../interfaces/VaultElement';
+import UserKeyPopup from '../../components/userKeyPopup/UserKeyPopup';
 
 function HomeView() {
     const apiUrl = import.meta.env.VITE_API_URL;
@@ -16,7 +17,6 @@ function HomeView() {
 
     useEffect(() => {
         const fetchVaultData = async () => {
-            setData([]);
             setRefreshKey(false);
             try {
                 const response = await fetch(`${apiUrl}/vault`, {
@@ -52,7 +52,7 @@ function HomeView() {
                     LockedIn Vault
                 </Typography>
             </Stack>
-            {/* <UserKeyPopup setUserKey={setUserKey}/> */}
+            <UserKeyPopup setUserKey={setUserKey} userKey={userKey}/>
             <Divider sx={{margin: '20px 20px 0px 20px', borderColor: 'lightgray'}}/>
             <FilterOptions onSearchChange={setSearchText} onFilterChange={setFilterType}></FilterOptions>
             <Divider sx={{margin: '20px', borderColor: 'lightgray'}}/>

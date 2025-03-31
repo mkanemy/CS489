@@ -2,8 +2,13 @@ import { Box, Stack, Typography } from '@mui/material';
 import './VaultList.css'
 import VaultElement from '../vaultElement/VaultElement';
 import { VaultElementInterface } from '../../interfaces/VaultElement';
+import { useEffect } from 'react';
 
 function VaultList({searchText, filterType, data, userKey, setRefreshKey}: Readonly<{searchText: string, filterType: string, data: VaultElementInterface[], userKey: string, setRefreshKey: (bool: Boolean) => void}>) {
+
+    useEffect(() => {
+        console.log("HI");
+    }, [data]);
 
     return (
         <Stack className="VaultList" sx={{ flexDirection: 'column', alignSelf: 'center', marginTop: '5%' }}>
@@ -20,7 +25,7 @@ function VaultList({searchText, filterType, data, userKey, setRefreshKey}: Reado
                 (
                     (searchText === '' || element.name.toLocaleLowerCase().startsWith(searchText.toLocaleLowerCase())) && 
                     (filterType === 'All' || filterType === element.type)
-                ) && (<VaultElement setRefreshKey={setRefreshKey} index={index} element={element} userKey={userKey}></VaultElement>)))}
+                ) && (<VaultElement key={element.id || index} setRefreshKey={setRefreshKey} index={index} element={element} userKey={userKey}></VaultElement>)))}
         </Stack>
     )
 }
