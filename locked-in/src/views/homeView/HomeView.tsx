@@ -52,7 +52,7 @@ function HomeView() {
                     LockedIn Vault
                 </Typography>
             </Stack>
-            <UserKeyPopup setUserKey={setUserKey} userKey={userKey}/>
+            <UserKeyPopup setRefreshKey={setRefreshKey} setUserKey={setUserKey} userKey={userKey}/>
             <Divider sx={{margin: '20px 20px 0px 20px', borderColor: 'lightgray'}}/>
             <FilterOptions onSearchChange={setSearchText} onFilterChange={setFilterType}></FilterOptions>
             <Divider sx={{margin: '20px', borderColor: 'lightgray'}}/>
