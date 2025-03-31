@@ -29,6 +29,8 @@ FASTAPI_SECRET_KEY=<randomly generated key>
 REDIRECT_URL=<url to the /auth endpoint>
 JWT_SECRET_KEY=<randomly generated key>
 FRONTEND_URL=<url to the frontend's /home page>
+SALT=<a random string for securely hashing and storing the master key>
+ENVIRONMENT=<DEV for development, or PRODUCTION for production>
 ```
 and a folder called `bucket`.
 

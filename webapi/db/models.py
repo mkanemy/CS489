@@ -18,7 +18,7 @@ class SecretMetadataBase(SQLModel):
 
 class SecretMetadata(SecretMetadataBase, table=True):
     id: Optional[int] = Field(index=True, primary_key=True, default=None)
-    owner_email: str = Field(index=True)
+    owner_email: str = Field(index=True, foreign_key="user.email", ondelete="CASCADE")
     created_at: datetime = Field(default_factory=datetime.now)
 
 
@@ -40,3 +40,10 @@ class SecretFile(SQLModel, table=True):
     secret_file_name: str = Field()
 
     secret_metadata: Optional[SecretMetadata] = Relationship()
+
+
+class User(SQLModel, table=True):
+    email: str = Field(primary_key=True)
+    master_key_hash: bytes = Field(nullable=False)
+
+    secret_metadata_list: list[SecretMetadata] = Relationship(back_populates="secretmetadata", cascade_delete=True)

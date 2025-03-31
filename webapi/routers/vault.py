@@ -12,7 +12,7 @@ from sqlmodel import select
 
 from webapi.auth.jwt import UserEmailDep
 from webapi.db.database import SessionDep
-from webapi.db.models import SecretMetadata, SecretType, SecretMetadataPublic, SecretString, SecretFile
+from webapi.db.models import SecretMetadata, SecretType, SecretMetadataPublic, SecretString, SecretFile, User
 from webapi.storage.common import syspath
 from webapi.storage.write import write
 
@@ -34,7 +34,7 @@ def sanity_check(secret_metadata: SecretMetadata, user_email: str):
 
 @router.get("/vault", tags=["vault"], response_model=List[SecretMetadataPublic])
 async def list_secret_metadata(user_email: UserEmailDep, session: SessionDep):
-    return session.exec(select(SecretMetadata).where(SecretMetadata.owner_email == user_email)).all()
+    return session.get(User, user_email).secret_metadata_list
 
 
 @router.get("/vault/secret/{secret_id}", tags=["vault"])
