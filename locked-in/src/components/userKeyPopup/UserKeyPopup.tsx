@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-function UserKeyPopup({setUserKey, userKey}: Readonly<{setUserKey: (input: string) => void, userKey: string}>) {
+function UserKeyPopup({setRefreshKey, setUserKey, userKey}: Readonly<{setRefreshKey: (bool: Boolean) => void, setUserKey: (input: string) => void, userKey: string}>) {
     const [open, setOpen] = useState(true);
     const [isRegistered, setIsRegistered] = useState(false);
     const [reset, setReset] = useState(false);
@@ -50,6 +50,11 @@ function UserKeyPopup({setUserKey, userKey}: Readonly<{setUserKey: (input: strin
     
                                 const formData = new FormData(event.currentTarget);
                                 const key = formData.get("key") as string;
+
+                                const confirmed = window.confirm("Are you sure you want to delete all data to reset your key?");
+                                if (!confirmed) {
+                                    return;
+                                }
     
                                 try {
                                     const res = await fetch(`${apiUrl}/user/register_master_key`, {
@@ -66,7 +71,8 @@ function UserKeyPopup({setUserKey, userKey}: Readonly<{setUserKey: (input: strin
                                         setError("Invalid Key");
                                         return;
                                     }
-                            
+                                    
+                                    setRefreshKey(true);
                                     setUserKey(key);
                                     handleOpenClose();
                                 } catch (err) {
