@@ -33,3 +33,11 @@ async def check_master_key_hash(user_email: UserEmailDep, master_key_hash: bytes
 
     if not bcrypt.checkpw(master_key_hash, user.master_key_hash):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Master key hash doesn't match.")
+
+
+@router.get("/user/check_registration", tags=["user"], status_code=status.HTTP_200_OK)
+async def check_registration(user_email: UserEmailDep, session: SessionDep):
+    user = session.get(User, user_email)
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User hasn't registered master key yet.")
