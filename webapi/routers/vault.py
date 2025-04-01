@@ -18,7 +18,7 @@ from webapi.storage.write import write
 
 
 class SecretCreateUpdateModel(BaseModel):
-    name: Optional[str]
+    name: Optional[str] = Field(max_length=128)
     expires_at: Optional[datetime] = Field(gt=datetime.now(), default=None)
 
 
@@ -87,7 +87,7 @@ async def update_secret_metadata(user_email: UserEmailDep, secret_id: int,
 
 @router.post("/vault/add/string", tags=["vault"])
 async def add_secret_string(user_email: UserEmailDep, add: Annotated[SecretCreateUpdateModel, Query()],
-                            secret_string: Annotated[bytes, Body(max_length=4096)], session: SessionDep):
+                            secret_string: Annotated[bytes, Body(max_length=2048)], session: SessionDep):
     secret_metadata = SecretMetadata(name=add.name, expires_at=add.expires_at, owner_email=user_email,
                                      type=SecretType.STRING)
     session.add(secret_metadata)
