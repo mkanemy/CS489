@@ -52,7 +52,7 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({ fileRef, setDroppedFiles, d
           </Typography>
         ) : (
           <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
-            Drag files here, or click to select files
+            Drag files here, or click to select files (Max. 5MB)
           </Typography>
         )}
       </div>

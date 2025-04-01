@@ -12,7 +12,6 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
     const [showSecret, setShowSecret] = useState(false);
     const [decryptedValue, setDecryptedValue] = useState("");
     const [copied, setCopied] = useState(false);
-    const MAX_SECRET_LENGTH = 10;
 
     const [showFileName, setShowFileName] = useState(false);
     const [fileName, setFileName] = useState("");
@@ -41,21 +40,6 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
         }
     };
 
-    const decryptFile = async (id: number) => {
-        try {
-            const response = await fetch(`${apiUrl}/vault/secret/${encodeURIComponent(id)}`, {
-                credentials: "include",
-            });
-            const blob = await response.blob();
-            const encryptedFile = await blob.text(); // this gives you base64 string
-    
-            const decryptedArrayBuffer = await decryptFileBuffer(encryptedFile);
-            return decryptedArrayBuffer;
-        } catch (error) {
-            console.error("Error fetching vault data:", error);
-            return 'error';
-        }
-    };    
 
     const decryptBuffer = async (value:string) => {
         const encoder = new TextEncoder();
@@ -258,7 +242,7 @@ function VaultElement({ index, element, userKey, setRefreshKey}: Readonly<{ inde
                     <ButtonBase onClick={() => { showDecryptSecret() }}>
                         {showSecret ? <VisibilityOutlined /> : <VisibilityOffOutlinedIcon />}
                         <Typography sx={{ fontSize: '1rem', fontWeight: 400 }}>
-                            Show
+                            {showSecret ? 'Hide' : 'Show'}
                         </Typography>
                     </ButtonBase>
                 </Stack>
