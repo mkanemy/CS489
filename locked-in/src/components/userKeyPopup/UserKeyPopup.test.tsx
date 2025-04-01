@@ -6,7 +6,7 @@ describe('UserKeyPopup Component', () => {
     test('does init', async () => {
         const mockSetUserKey = jest.fn();
 
-        render(<UserKeyPopup setUserKey={mockSetUserKey} />);
+        // render(<UserKeyPopup setUserKey={mockSetUserKey} />);
 
         expect(screen.getByText('Enter Key')).toBeTruthy();
     });

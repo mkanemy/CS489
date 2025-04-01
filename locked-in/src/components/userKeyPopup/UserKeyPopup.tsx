@@ -12,6 +12,15 @@ function UserKeyPopup({setRefreshKey, setUserKey, userKey}: Readonly<{setRefresh
         setOpen(!open);
     };
 
+    async function hashString(input: string): Promise<string> {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(input);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
+
     useEffect(() => {
         const checkRegister = async () => {
             const res = await fetch(`${apiUrl}/user/check_registration`, {
@@ -63,7 +72,7 @@ function UserKeyPopup({setRefreshKey, setUserKey, userKey}: Readonly<{setRefresh
                                         headers: {
                                             'Content-Type': 'application/json',
                                         },
-                                        body: JSON.stringify(key)
+                                        body: JSON.stringify(await hashString(key))
                                     });
                             
                                     if (!res.ok) {
@@ -133,7 +142,7 @@ function UserKeyPopup({setRefreshKey, setUserKey, userKey}: Readonly<{setRefresh
 
                             try {
                                 if (isRegistered) {
-                                    const res = await fetch(`${apiUrl}/user/check_master_key?master_key_hash=${encodeURIComponent(key)}`, {
+                                    const res = await fetch(`${apiUrl}/user/check_master_key?master_key_hash=${encodeURIComponent(await hashString(key))}`, {
                                         method: 'GET',
                                         credentials: "include",
                                         headers: {
@@ -153,7 +162,7 @@ function UserKeyPopup({setRefreshKey, setUserKey, userKey}: Readonly<{setRefresh
                                         headers: {
                                             'Content-Type': 'application/json',
                                         },
-                                        body: JSON.stringify(key)
+                                        body: JSON.stringify(await hashString(key))
                                     });
                             
                                     if (!res.ok) {
@@ -201,8 +210,8 @@ function UserKeyPopup({setRefreshKey, setUserKey, userKey}: Readonly<{setRefresh
                     </DialogContentText>
                 }
                 <DialogActions style={{display: "flex", justifyContent: 'space-between', width: '95%', margin: '0 auto'}}>
-                    <Button type="submit">Enter Vault</Button>
-                    <Button style={{ color: "#dc2626" }} onClick={() => {setReset(true)}}>Reset Key</Button>
+                    <Button type="submit">{isRegistered ? "Enter Vault" : "Set Key"}</Button>
+                    {isRegistered && <Button style={{ color: "#dc2626" }} onClick={() => {setReset(true)}}>Reset Key</Button>}
                 </DialogActions>
             </Dialog>
     )
