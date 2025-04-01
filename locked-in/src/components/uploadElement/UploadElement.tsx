@@ -163,8 +163,13 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                     setErrorMsg('Please Upload a File');
                     return;
                 }
+                const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
                 await Promise.all(
                     droppedFiles.map(async (file) => {
+                        if (file.size > maxFileSize) {
+                            setErrorMsg('File size exceeds 5MB limit');
+                            return;
+                        }
                         // Get buffer of file and file name
                         const fileBuffer = await file.arrayBuffer();
 
@@ -198,14 +203,6 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
 
                 <Divider sx={{ margin: '0px 0px 10px 0px', borderColor: 'lightgray' }} />
 
-                {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <Stack>
-                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
-                            Expiry Date
-                        </Typography>
-                        <DatePicker slotProps={{ textField: { variant: "filled", hiddenLabel: true, focused: true, size: "small" } }} sx={{ input: { color: 'white' } }} value={expiryDate} onChange={(x) => { setExpiryDate(x ?? dayjs().add(1, 'year')) }} />
-                    </Stack>
-                </LocalizationProvider> */}
 
                 <Stack>
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 400 }}>
@@ -221,7 +218,7 @@ function UploadElement({ userKey, setRefreshKey }: Readonly<{ userKey: string, s
                         </Typography>
                         <TextField
                             required
-                            placeholder="Secret"
+                            placeholder="Secret (Max. 128 Characters)"
                             inputRef={secretRef}
                             variant="filled"
                             hiddenLabel
